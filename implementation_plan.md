@@ -5,6 +5,30 @@ Personal news aggregation system with admin interface for testing and configurat
 
 **Single user (admin only) for MVP.** Manual testing via admin interface. Deployment on Firebase Hosting.
 
+## Current Status - Sprint 5 Complete ✅
+
+**Backend (100% Complete):**
+- ✅ 18 Firebase Functions deployed to production
+- ✅ RSS & web scraping support
+- ✅ Automatic categorization (rule-based)
+- ✅ Scheduled fetch job (every 12 hours)
+- ✅ Fetch logging with detailed per-source tracking
+- ✅ Article deduplication & storage
+
+**Admin Interface (95% Complete):**
+- ✅ Dashboard with stats & fetch logs
+- ✅ Sources Manager (add, edit, test, toggle)
+- ✅ Categories Manager (CRUD, rules configuration)
+- ✅ Articles Browser (search, filter, browse)
+- ⏳ Settings page (pending)
+
+**User Interface (0% Complete):**
+- ⏳ NewsView component (main reading interface)
+- ⏳ Category filtering
+- ⏳ Article grid layout
+
+**Next:** Sprint 6 - User-Facing Interface & Settings
+
 ## Technology Stack
 
 ### Backend
@@ -56,11 +80,12 @@ tribune/
 │   │   ├── storage/
 │   │   │   ├── sources.ts       # Source CRUD functions ✅
 │   │   │   ├── articles.ts      # Article storage ✅
-│   │   │   └── categories.ts    # Category management ✅
+│   │   │   ├── categories.ts    # Category management ✅
+│   │   │   └── fetchLogs.ts     # Fetch logging system ✅
 │   │   ├── core/
 │   │   │   └── fetchSource.ts   # Fetch orchestration ✅
 │   │   ├── scheduled/
-│   │   │   └── fetchJob.ts      # Scheduled fetch job (pending)
+│   │   │   └── fetchJob.ts      # Scheduled fetch job ✅
 │   │   └── types/
 │   │       └── index.ts         # Shared types ✅
 │   ├── package.json
@@ -70,10 +95,10 @@ tribune/
 │   ├── main.tsx                 # Entry point
 │   ├── App.tsx                  # Root component with routing
 │   ├── admin/                   # Admin pages
-│   │   ├── Dashboard.tsx        # (pending)
+│   │   ├── Dashboard.tsx        # ✅ Completed
 │   │   ├── SourcesManager.tsx   # ✅ Completed
 │   │   ├── CategoriesManager.tsx # ✅ Completed
-│   │   ├── ArticlesBrowser.tsx  # (pending)
+│   │   ├── ArticlesBrowser.tsx  # ✅ Completed
 │   │   ├── Settings.tsx         # (pending)
 │   │   └── components/
 │   │       ├── AddSourceModal.tsx     # ✅ Completed
@@ -908,14 +933,15 @@ interface StoredArticle {
 
 ## Success Criteria
 
-### MVP Completion
+### MVP Completion ✅
 - ✅ Admin can add sources (RSS or scraped) via UI
 - ✅ Test source functionality previews articles before saving
 - ✅ Fetch runs successfully (manual and scheduled)
 - ✅ Articles stored with deduplication (URL-based)
 - ✅ Rule-based categorization works with 80%+ accuracy
 - ✅ Dashboard shows per-source success/failure logs
-- ✅ User-facing view displays articles in clean layout
+- ✅ Articles Browser displays articles with search/filters
+- ⏳ User-facing view displays articles in clean layout (pending)
 
 ### Operational Goals
 - **Data retention:** Auto-delete articles older than 30 days
@@ -989,7 +1015,8 @@ interface StoredArticle {
 3. ✅ Build admin dashboard page
 4. ✅ Display fetch logs with per-source details
 5. ✅ Add manual "Fetch All" button
-6. ⏳ Test scheduled function (deploy to test)
+6. ✅ Build Articles Browser (completed ahead of schedule)
+7. ✅ Deploy all functions to Firebase production
 
 **Features Delivered:**
 - `fetchJob.ts` - Scheduled function running every 12 hours (cron: "0 */12 * * *")
@@ -1004,14 +1031,28 @@ interface StoredArticle {
   - Manual "Fetch All Sources Now" button
   - First-time setup prompts for empty states
   - Loading states and error handling
+- Articles Browser UI with:
+  - Search functionality (title, summary, source)
+  - Filter by source and category
+  - Article cards with thumbnails, summaries, metadata
+  - Category badges (color-coded)
+  - Responsive design with empty states
+  - Links to original articles
 
-### Sprint 6: User-Facing Interface (Week 4)
-1. Design article card component
-2. Build main news view with filters
-3. Add category tabs/filters
-4. Add source filter dropdown
-5. Implement search functionality
-6. Test with real data
+**Deployment Status:**
+- ✅ All 18 Firebase Functions deployed to production (us-central1)
+- ✅ Frontend configured for production Firebase
+- ✅ Scheduled fetch active (runs automatically every 12 hours)
+- ✅ Firestore security rules in place
+
+### Sprint 6: User-Facing Interface & Settings (Week 4) - IN PROGRESS
+1. Build main NewsView component (user-facing article reader)
+2. Add newspaper-style layout with grid/masonry design
+3. Implement category filtering (tabs or sidebar)
+4. Add date range selector
+5. Build Settings page (admin configuration)
+6. Add data retention cleanup controls
+7. Test complete user flow end-to-end
 
 ### Sprint 7: Polish & Deploy (Week 4)
 1. Implement data retention cleanup function
