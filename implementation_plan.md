@@ -72,12 +72,14 @@ tribune/
 │   ├── admin/                   # Admin pages
 │   │   ├── Dashboard.tsx        # (pending)
 │   │   ├── SourcesManager.tsx   # ✅ Completed
-│   │   ├── CategoriesManager.tsx # (pending)
+│   │   ├── CategoriesManager.tsx # ✅ Completed
 │   │   ├── ArticlesBrowser.tsx  # (pending)
 │   │   ├── Settings.tsx         # (pending)
 │   │   └── components/
-│   │       ├── AddSourceModal.tsx    # ✅ Completed
-│   │       └── TestSourceModal.tsx   # ✅ Completed
+│   │       ├── AddSourceModal.tsx     # ✅ Completed
+│   │       ├── TestSourceModal.tsx    # ✅ Completed
+│   │       ├── AddCategoryModal.tsx   # ✅ Completed
+│   │       └── EditCategoryModal.tsx  # ✅ Completed
 │   ├── user/                    # User-facing pages
 │   │   └── NewsView.tsx         # (pending)
 │   ├── components/              # Shared components
@@ -964,13 +966,22 @@ interface StoredArticle {
 - Removed CSS selector complexity from user interface
 - Fixed Firestore undefined field issue
 
-### Sprint 4: Categorization (Week 3)
-1. Implement category CRUD functions
-2. Build categorization logic (rule-based)
-3. Create Categories Manager UI page
-4. Build category form (keywords, sources, domains)
-5. Auto-create "Uncategorized" on first launch
-6. Test categorization with sample articles
+### Sprint 4: Categorization (Week 3) ✅ COMPLETED
+1. ✅ Implement category CRUD functions
+2. ✅ Build categorization logic (rule-based)
+3. ✅ Create Categories Manager UI page
+4. ✅ Build category form (keywords, sources, domains)
+5. ✅ Auto-create "Uncategorized" on first launch
+6. ✅ Test categorization with sample articles
+
+**Features Delivered:**
+- Full-featured Categories Manager UI with table view
+- Add Category Modal with complete form (keywords, sources, domains)
+- Edit Category Modal with protection for system categories
+- Automatic categorization on article fetch using rule-based matching
+- Visual category display (icon, color, rule counts)
+- Auto-creation of "Uncategorized" category when no rules match
+- Display order control (0-999 for sorting)
 
 ### Sprint 5: Scheduled Fetch & Logging (Week 3)
 1. Implement scheduled fetch function
