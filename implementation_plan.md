@@ -48,18 +48,21 @@ tribune/
 │   ├── src/
 │   │   ├── index.ts             # Function exports
 │   │   ├── scrapers/
-│   │   │   ├── rss.ts           # RSS fetcher
-│   │   │   └── scraper.ts       # Web scraper
+│   │   │   ├── rss.ts           # RSS fetcher ✅
+│   │   │   ├── scraper.ts       # Web scraper ✅
+│   │   │   └── normalize.ts     # Article normalization ✅
 │   │   ├── categorizers/
-│   │   │   └── ruleBased.ts     # Rule-based categorization
+│   │   │   └── ruleBased.ts     # Rule-based categorization ✅
 │   │   ├── storage/
-│   │   │   ├── sources.ts       # Source CRUD functions
-│   │   │   ├── articles.ts      # Article storage
-│   │   │   └── categories.ts    # Category management
+│   │   │   ├── sources.ts       # Source CRUD functions ✅
+│   │   │   ├── articles.ts      # Article storage ✅
+│   │   │   └── categories.ts    # Category management ✅
+│   │   ├── core/
+│   │   │   └── fetchSource.ts   # Fetch orchestration ✅
 │   │   ├── scheduled/
-│   │   │   └── fetchJob.ts      # Scheduled fetch job
+│   │   │   └── fetchJob.ts      # Scheduled fetch job (pending)
 │   │   └── types/
-│   │       └── index.ts         # Shared types
+│   │       └── index.ts         # Shared types ✅
 │   ├── package.json
 │   └── tsconfig.json
 │
@@ -67,29 +70,33 @@ tribune/
 │   ├── main.tsx                 # Entry point
 │   ├── App.tsx                  # Root component with routing
 │   ├── admin/                   # Admin pages
-│   │   ├── Dashboard.tsx
-│   │   ├── SourcesManager.tsx
-│   │   ├── CategoriesManager.tsx
-│   │   ├── ArticlesBrowser.tsx
-│   │   └── Settings.tsx
+│   │   ├── Dashboard.tsx        # (pending)
+│   │   ├── SourcesManager.tsx   # ✅ Completed
+│   │   ├── CategoriesManager.tsx # (pending)
+│   │   ├── ArticlesBrowser.tsx  # (pending)
+│   │   ├── Settings.tsx         # (pending)
+│   │   └── components/
+│   │       ├── AddSourceModal.tsx    # ✅ Completed
+│   │       └── TestSourceModal.tsx   # ✅ Completed
 │   ├── user/                    # User-facing pages
-│   │   └── NewsView.tsx
+│   │   └── NewsView.tsx         # (pending)
 │   ├── components/              # Shared components
-│   │   ├── Layout.tsx
-│   │   ├── ArticleCard.tsx
-│   │   └── SourceTestModal.tsx
-│   ├── stores/                  # Zustand stores
+│   │   └── Layout.tsx           # ✅ Completed
+│   ├── stores/                  # Zustand stores (not implemented yet)
 │   │   ├── useAuthStore.ts
 │   │   ├── useSourcesStore.ts
 │   │   ├── useCategoriesStore.ts
 │   │   ├── useArticlesStore.ts
 │   │   └── useFetchLogsStore.ts
 │   ├── lib/                     # Utilities
-│   │   ├── firebase.ts          # Firebase config
-│   │   ├── api.ts               # API helpers
+│   │   ├── firebase.ts          # Firebase config ✅
+│   │   ├── api.ts               # API helpers ✅
+│   │   ├── sourcePresets.ts     # ✅ NEW: Preset sources library
 │   │   └── utils.ts             # Shared utilities
+│   ├── contexts/                # React contexts
+│   │   └── auth.jsx             # ✅ Auth provider
 │   └── types/                   # TypeScript types
-│       └── index.ts
+│       └── index.ts             # ✅ Shared types
 │
 ├── public/                       # Static assets
 ├── firestore.rules              # Security rules
@@ -685,6 +692,25 @@ interface FetchLogDetail {
 - View fetch history per source
 - Bulk operations (enable/disable multiple)
 
+**Add Source Modal - Two Modes:**
+1. **Popular Sources (Default):**
+   - Pre-configured library of 15+ popular news sources
+   - Category filter (Tech, Business, Science, Design, General)
+   - One-click to add - no configuration needed
+   - Sources include: Hacker News, TechCrunch, BBC, NPR, Bloomberg, NASA, etc.
+
+2. **Custom RSS Feed:**
+   - Simple form for custom RSS feeds
+   - Required: Name + RSS Feed URL
+   - Optional: Category, Update Frequency, Priority, Notes
+   - **Web scraping removed from user-facing UI** (backend still supports it)
+
+**Rationale for Changes:**
+- ❌ Removed CSS selector input from UI (too technical for users)
+- ✅ Added preset source library for easy onboarding
+- ✅ Still support RSS for custom sources
+- ✅ Web scraping capability preserved in backend for future preset sources
+
 **Test Source Flow:**
 1. Click "Test" button
 2. Function fetches articles (doesn't save)
@@ -923,14 +949,20 @@ interface StoredArticle {
 6. Build article storage functions with deduplication
 7. Test functions via emulator
 
-### Sprint 3: Admin UI - Sources (Week 2)
-1. Create basic admin layout (navigation, header)
-2. Build Sources Manager page (list view)
-3. Build "Add Source" form (RSS + scrape config)
-4. Implement "Test Source" modal with preview
-5. Add enable/disable toggle
-6. Connect to backend functions
-7. Test with 2-3 real sources
+### Sprint 3: Admin UI - Sources (Week 2) ✅ COMPLETED
+1. ✅ Create basic admin layout (navigation, header)
+2. ✅ Build Sources Manager page (list view)
+3. ✅ Build "Add Source" modal with preset library + custom RSS
+4. ✅ Implement "Test Source" modal with preview
+5. ✅ Add enable/disable toggle
+6. ✅ Connect to backend functions
+7. ✅ Test with real RSS sources (preset library tested)
+
+**Improvements Made:**
+- Created `sourcePresets.ts` library with 15+ pre-configured sources
+- Two-tab modal: "Popular Sources" and "Custom RSS Feed"
+- Removed CSS selector complexity from user interface
+- Fixed Firestore undefined field issue
 
 ### Sprint 4: Categorization (Week 3)
 1. Implement category CRUD functions

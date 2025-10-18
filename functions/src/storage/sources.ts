@@ -32,7 +32,7 @@ export async function addSource(sourceData: CreateSourceData): Promise<string> {
       url: sourceData.url,
       type: sourceData.type,
       enabled: sourceData.enabled ?? true,
-      selectors: sourceData.selectors,
+      ...(sourceData.selectors && { selectors: sourceData.selectors }), // Only include if defined
       category: sourceData.category || "general",
       updateFrequency: sourceData.updateFrequency || "daily",
       priority: sourceData.priority || 5,
@@ -53,7 +53,12 @@ export async function addSource(sourceData: CreateSourceData): Promise<string> {
 
     return docRef.id;
   } catch (error) {
-    logger.error("Failed to create source", { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("Failed to create source", {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+      sourceData
+    });
     throw error;
   }
 }

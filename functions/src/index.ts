@@ -56,10 +56,15 @@ export const createSource = onCall(async (request) => {
 
   try {
     const sourceData = request.data as CreateSourceData;
+    logger.info("createSource called", { sourceData });
     const sourceId = await addSource(sourceData);
     return { success: true, sourceId };
   } catch (error) {
-    logger.error("createSource failed", { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error("createSource failed", {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     throw new HttpsError("internal", "Failed to create source");
   }
 });
