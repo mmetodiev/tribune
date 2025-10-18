@@ -983,13 +983,27 @@ interface StoredArticle {
 - Auto-creation of "Uncategorized" category when no rules match
 - Display order control (0-999 for sorting)
 
-### Sprint 5: Scheduled Fetch & Logging (Week 3)
-1. Implement scheduled fetch function
-2. Create fetch logging system
-3. Build admin dashboard page
-4. Display fetch logs with per-source details
-5. Add manual "Fetch All" button
-6. Test scheduled function (deploy to test)
+### Sprint 5: Scheduled Fetch & Logging (Week 3) ✅ COMPLETED
+1. ✅ Implement scheduled fetch function
+2. ✅ Create fetch logging system
+3. ✅ Build admin dashboard page
+4. ✅ Display fetch logs with per-source details
+5. ✅ Add manual "Fetch All" button
+6. ⏳ Test scheduled function (deploy to test)
+
+**Features Delivered:**
+- `fetchJob.ts` - Scheduled function running every 12 hours (cron: "0 */12 * * *")
+- `fetchLogs.ts` - Storage layer for logging fetch runs with source-level details
+- `getFetchLogs` - Callable function to retrieve recent fetch logs
+- Updated `manualFetchAll` - Now creates fetch log entries
+- Comprehensive Dashboard UI with:
+  - Real-time stats cards (sources, articles, categories, last fetch time)
+  - Interactive fetch logs with expandable per-source details
+  - Color-coded status indicators (green/yellow/red)
+  - Progress bars showing success rates
+  - Manual "Fetch All Sources Now" button
+  - First-time setup prompts for empty states
+  - Loading states and error handling
 
 ### Sprint 6: User-Facing Interface (Week 4)
 1. Design article card component

@@ -33,7 +33,8 @@ import {
 } from "./storage/categories.js";
 
 import { fetchSource, fetchAndStoreArticles } from "./core/fetchSource.js";
-import type { Source } from "./types/index.js";
+import { getRecentFetchLogs, createFetchLog } from "./storage/fetchLogs.js";
+import type { Source, FetchLogDetail } from "./types/index.js";
 
 /**
  * Helper function to require authentication
@@ -338,7 +339,7 @@ export const manualFetchAll = onCall(async (request) => {
       enabledSources.map((source: Source) => fetchAndStoreArticles(source))
     );
 
-    const summary = results.map((result, index) => {
+    const details: FetchLogDetail[] = results.map((result, index) => {
       if (result.status === "fulfilled") {
         return {
           sourceId: enabledSources[index].id,
@@ -358,17 +359,47 @@ export const manualFetchAll = onCall(async (request) => {
       }
     });
 
-    const totalArticles = summary.reduce((sum, s) => sum + s.articleCount, 0);
-    const errorCount = summary.filter((s) => !s.success).length;
+    const totalArticles = details.reduce((sum, s) => sum + s.articleCount, 0);
+    const errorCount = details.filter((s) => !s.success).length;
+
+    // Create a fetch log entry for manual fetch
+    await createFetchLog(enabledSources.length, totalArticles, errorCount, details);
 
     return {
       success: true,
       totalArticles,
       errorCount,
-      details: summary,
+      details,
     };
   } catch (error) {
     logger.error("manualFetchAll failed", { error });
     throw new HttpsError("internal", "Failed to fetch all sources");
   }
 });
+
+// ============================================================================
+// FETCH LOG FUNCTIONS
+// ============================================================================
+
+/**
+ * Gets recent fetch logs
+ */
+export const getFetchLogs = onCall(async (request) => {
+  requireAuth(request);
+
+  try {
+    const { limit } = request.data || {};
+    const logs = await getRecentFetchLogs(limit || 10);
+    return { success: true, logs };
+  } catch (error) {
+    logger.error("getFetchLogs failed", { error });
+    throw new HttpsError("internal", "Failed to get fetch logs");
+  }
+});
+
+// ============================================================================
+// SCHEDULED FUNCTIONS
+// ============================================================================
+
+// Export the scheduled fetch job
+export { scheduledFetch } from "./scheduled/fetchJob.js";

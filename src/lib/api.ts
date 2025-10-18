@@ -109,3 +109,13 @@ export async function getCategories(): Promise<{ success: boolean; categories: C
   const result = await fn({});
   return result.data as any;
 }
+
+// ============================================================================
+// FETCH LOG FUNCTIONS
+// ============================================================================
+
+export async function getFetchLogs(limit = 10) {
+  const fn = httpsCallable(functions, "getFetchLogs");
+  const result = await fn({ limit });
+  return result.data;
+}
