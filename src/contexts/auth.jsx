@@ -1,5 +1,5 @@
 // AuthProvider.jsx
-import { auth } from "@/config/firebase";
+import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { createContext, useContext, useEffect, useReducer } from "react";
 
