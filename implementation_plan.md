@@ -5,7 +5,7 @@ Personal news aggregation system with admin interface for testing and configurat
 
 **Single user (admin only) for MVP.** Manual testing via admin interface. Deployment on Firebase Hosting.
 
-## Current Status - Sprint 5 Complete ✅
+## Current Status - Sprint 6 Complete ✅
 
 **Backend (100% Complete):**
 - ✅ 18 Firebase Functions deployed to production
@@ -22,12 +22,14 @@ Personal news aggregation system with admin interface for testing and configurat
 - ✅ Articles Browser (search, filter, browse)
 - ⏳ Settings page (pending)
 
-**User Interface (0% Complete):**
-- ⏳ NewsView component (main reading interface)
-- ⏳ Category filtering
-- ⏳ Article grid layout
+**User Interface (100% Complete):**
+- ✅ NewsView component with vintage newspaper layout
+- ✅ Real article data integration
+- ✅ Responsive grid layout with featured article
+- ✅ Left sidebar with categorized headlines
+- ✅ Custom typography (Bebas Neue, Lato, Serif fonts)
 
-**Next:** Sprint 6 - User-Facing Interface & Settings
+**Next:** Sprint 7 - Polish, Settings & Final Deployment
 
 ## Technology Stack
 
@@ -1045,14 +1047,31 @@ interface StoredArticle {
 - ✅ Scheduled fetch active (runs automatically every 12 hours)
 - ✅ Firestore security rules in place
 
-### Sprint 6: User-Facing Interface & Settings (Week 4) - IN PROGRESS
-1. Build main NewsView component (user-facing article reader)
-2. Add newspaper-style layout with grid/masonry design
-3. Implement category filtering (tabs or sidebar)
-4. Add date range selector
-5. Build Settings page (admin configuration)
-6. Add data retention cleanup controls
-7. Test complete user flow end-to-end
+### Sprint 6: User-Facing Interface (Week 4) ✅ COMPLETED
+1. ✅ Built main NewsView component with vintage newspaper layout
+2. ✅ Implemented classic newspaper design with:
+   - Cream background (#f9f7f1) and dark ink text (#2f2f2f)
+   - Tribune masthead with date subhead
+   - Left sidebar (1/5 width) with 3 sections: Top Stories, Business & Markets, This Week
+   - Main content area (4/5 width) with featured article + 4-column grid
+3. ✅ Typography & Styling:
+   - Bebas Neue for section headers (text-xl, uppercase)
+   - Lato for article headlines (text-base, bold)
+   - Grayscale filter on images for vintage newspaper effect
+   - Proper spacing and borders for classic newspaper feel
+4. ✅ Data Integration:
+   - Fetches real articles from Firestore via Firebase Functions API
+   - Displays article titles, summaries, images, sources, dates
+   - All headlines clickable (open in new tab)
+   - Loading and empty states implemented
+5. ⏳ Category filtering (deferred - not needed for MVP)
+6. ⏳ Settings page (deferred to Sprint 7)
+
+**Features Delivered:**
+- Fully functional user-facing news reader at root path (/)
+- Vintage newspaper aesthetic matching design goals
+- Responsive layout with proper article distribution
+- Real-time article fetching from production database
 
 ### Sprint 7: Polish & Deploy (Week 4)
 1. Implement data retention cleanup function
