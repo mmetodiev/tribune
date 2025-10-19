@@ -29,7 +29,13 @@ export default function ArticleItem({ article, variant = 'large' }: ArticleItemP
               {article.title}
             </h4>
           </Link>
-          <span className="text-xs text-gray-600"> · {article.sourceName}</span>
+          <span className="text-xs text-gray-600"> · </span>
+          <Link 
+            to={`/source/${article.sourceId}`}
+            className="text-xs text-gray-600 hover:text-gray-900 hover:underline"
+          >
+            {article.sourceName}
+          </Link>
         </div>
 
         {/* Show RSS summary first, fall back to extractedSummary */}
@@ -55,7 +61,13 @@ export default function ArticleItem({ article, variant = 'large' }: ArticleItemP
             {article.title}
           </h3>
         </Link>
-        <span className="text-xs text-gray-600"> · {article.sourceName}</span>
+        <span className="text-xs text-gray-600"> · </span>
+        <Link 
+          to={`/source/${article.sourceId}`}
+          className="text-xs text-gray-600 hover:text-gray-900 hover:underline"
+        >
+          {article.sourceName}
+        </Link>
       </div>
 
       {article.imageUrl && (

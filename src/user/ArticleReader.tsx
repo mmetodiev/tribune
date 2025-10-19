@@ -213,7 +213,7 @@ export default function ArticleReader() {
                 }`}
                 title="Small font"
               >
-                <Type className="w-3 h-3" />
+                <Type className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setFontSize('medium')}
@@ -224,7 +224,7 @@ export default function ArticleReader() {
                 }`}
                 title="Medium font"
               >
-                <Type className="w-4 h-4" />
+                <Type className="w-4.5 h-4.5" />
               </button>
               <button
                 onClick={() => setFontSize('large')}
@@ -235,7 +235,7 @@ export default function ArticleReader() {
                 }`}
                 title="Large font"
               >
-                <Type className="w-5 h-5" />
+                <Type className="w-5.5 h-5.5" />
               </button>
             </div>
           </div>
@@ -281,36 +281,36 @@ export default function ArticleReader() {
         {/* Content with Tailwind Typography and Column Layout */}
         <div
           className={`
-            ${fontSize === 'small' ? 'prose-sm' : fontSize === 'large' ? 'prose-lg' : 'prose-base'}
+            ${fontSize === 'small' ? 'prose-base' : fontSize === 'large' ? 'prose-xl' : 'prose-lg'}
             prose max-w-none
             prose-headings:font-serif prose-headings:font-bold prose-headings:text-gray-900 prose-headings:tracking-tight
             ${fontSize === 'small' 
-              ? 'prose-h1:text-xl prose-h1:mb-3 prose-h1:mt-6 prose-h2:text-lg prose-h2:mb-2 prose-h2:mt-6 prose-h3:text-base prose-h3:mb-2 prose-h3:mt-4'
+              ? 'prose-h1:text-2xl prose-h1:mb-4 prose-h1:mt-8 prose-h2:text-xl prose-h2:mb-3 prose-h2:mt-8 prose-h3:text-lg prose-h3:mb-3 prose-h3:mt-6'
               : fontSize === 'large'
-              ? 'prose-h1:text-3xl prose-h1:mb-5 prose-h1:mt-10 prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-10 prose-h3:text-xl prose-h3:mb-4 prose-h3:mt-8'
-              : 'prose-h1:text-2xl prose-h1:mb-4 prose-h1:mt-8 prose-h2:text-xl prose-h2:mb-3 prose-h2:mt-8 prose-h3:text-lg prose-h3:mb-3 prose-h3:mt-6'
+              ? 'prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-12 prose-h2:text-3xl prose-h2:mb-5 prose-h2:mt-12 prose-h3:text-2xl prose-h3:mb-5 prose-h3:mt-10'
+              : 'prose-h1:text-3xl prose-h1:mb-5 prose-h1:mt-10 prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-10 prose-h3:text-xl prose-h3:mb-4 prose-h3:mt-8'
             }
             prose-p:font-serif prose-p:text-gray-800 prose-p:leading-relaxed 
-            ${fontSize === 'small' ? 'prose-p:mb-3' : fontSize === 'large' ? 'prose-p:mb-5' : 'prose-p:mb-4'}
+            ${fontSize === 'small' ? 'prose-p:mb-4' : fontSize === 'large' ? 'prose-p:mb-6' : 'prose-p:mb-5'}
             prose-a:text-blue-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:transition-colors
             prose-strong:text-gray-900 prose-strong:font-semibold
             prose-em:text-gray-800 prose-em:italic
             prose-img:rounded-lg prose-img:shadow-lg 
-            ${fontSize === 'small' ? 'prose-img:my-6' : fontSize === 'large' ? 'prose-img:my-10' : 'prose-img:my-8'}
+            ${fontSize === 'small' ? 'prose-img:my-8' : fontSize === 'large' ? 'prose-img:my-12' : 'prose-img:my-10'}
             prose-img:w-full
-            ${fontSize === 'small' ? 'prose-figure:my-6' : fontSize === 'large' ? 'prose-figure:my-10' : 'prose-figure:my-8'}
+            ${fontSize === 'small' ? 'prose-figure:my-8' : fontSize === 'large' ? 'prose-figure:my-12' : 'prose-figure:my-10'}
             prose-figcaption:text-center prose-figcaption:text-sm prose-figcaption:text-gray-600 prose-figcaption:mt-2
             prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:pl-4 prose-blockquote:py-1 prose-blockquote:italic prose-blockquote:text-gray-700 
-            ${fontSize === 'small' ? 'prose-blockquote:my-4' : fontSize === 'large' ? 'prose-blockquote:my-8' : 'prose-blockquote:my-6'}
+            ${fontSize === 'small' ? 'prose-blockquote:my-6' : fontSize === 'large' ? 'prose-blockquote:my-10' : 'prose-blockquote:my-8'}
             prose-code:bg-gray-100 prose-code:text-gray-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
             prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:p-4 prose-pre:rounded-lg 
-            ${fontSize === 'small' ? 'prose-pre:my-4' : fontSize === 'large' ? 'prose-pre:my-8' : 'prose-pre:my-6'}
+            ${fontSize === 'small' ? 'prose-pre:my-6' : fontSize === 'large' ? 'prose-pre:my-10' : 'prose-pre:my-8'}
             prose-pre:overflow-x-auto
-            ${fontSize === 'small' ? 'prose-ul:my-3 prose-ol:my-3' : fontSize === 'large' ? 'prose-ul:my-5 prose-ol:my-5' : 'prose-ul:my-4 prose-ol:my-4'}
+            ${fontSize === 'small' ? 'prose-ul:my-4 prose-ol:my-4' : fontSize === 'large' ? 'prose-ul:my-6 prose-ol:my-6' : 'prose-ul:my-5 prose-ol:my-5'}
             prose-ul:list-disc prose-ul:pl-5
             prose-ol:list-decimal prose-ol:pl-5
             prose-li:my-1 prose-li:text-gray-800 prose-li:leading-relaxed
-            ${fontSize === 'small' ? 'prose-hr:my-6' : fontSize === 'large' ? 'prose-hr:my-10' : 'prose-hr:my-8'}
+            ${fontSize === 'small' ? 'prose-hr:my-8' : fontSize === 'large' ? 'prose-hr:my-12' : 'prose-hr:my-10'}
             prose-hr:border-gray-300
             ${columns === 2 ? 'columns-2 gap-8' : columns === 3 ? 'columns-3 gap-6' : ''}
             ${columns > 1 ? '[column-rule:1px_solid_theme(colors.gray.300)]' : ''}
