@@ -421,6 +421,92 @@ export const testTextExtraction = onCall(async (request) => {
 });
 
 // ============================================================================
+// ARTICLE PROXY FOR READER VIEW
+// ============================================================================
+
+/**
+ * Fetches and parses article content using Readability.js
+ * Used by the article reader to extract clean article content
+ * 
+ * This approach is more robust than client-side parsing because:
+ * - JSDOM provides a complete DOM environment
+ * - Readability.js was designed to work with JSDOM
+ * - Server has more resources for parsing complex HTML
+ */
+export const proxyArticle = onCall(
+  {
+    cors: true, // Enable CORS for all origins
+    timeoutSeconds: 60, // Increase timeout for slow sites
+  },
+  async (request) => {
+    // No authentication required - article reader should be publicly accessible
+
+    try {
+      const { url } = request.data;
+
+      if (!url) {
+        throw new HttpsError("invalid-argument", "URL is required");
+      }
+
+      logger.info(`Fetching and parsing article: ${url}`);
+
+      // 1. Fetch article HTML
+      const axios = (await import("axios")).default;
+
+      const response = await axios.get(url, {
+        timeout: 30000,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; TribuneBot/1.0; +https://tribune.news/bot)",
+        },
+        maxRedirects: 5,
+      });
+
+      const html = response.data;
+      const finalUrl = response.request?.res?.responseUrl || url;
+
+      // 2. Create a virtual DOM with JSDOM
+      const { JSDOM } = await import("jsdom");
+      const dom = new JSDOM(html, { url: finalUrl });
+
+      // 3. Parse with Readability
+      const { Readability } = await import("@mozilla/readability");
+      const reader = new Readability(dom.window.document);
+      const article = reader.parse();
+
+      if (!article) {
+        logger.warn(`Failed to parse article: ${url}`);
+        throw new HttpsError("failed-precondition", "Unable to extract readable content from this article");
+      }
+
+      logger.info(`Successfully parsed article: ${article.title}`);
+
+      // 4. Return parsed article data
+      return {
+        success: true,
+        url: finalUrl,
+        title: article.title,
+        byline: article.byline,
+        excerpt: article.excerpt,
+        content: article.content, // HTML content
+        textContent: article.textContent, // Plain text
+        length: article.length,
+        siteName: article.siteName,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error("proxyArticle failed", { error: errorMessage });
+      
+      // Provide more specific error messages
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      
+      throw new HttpsError("internal", `Failed to fetch article: ${errorMessage}`);
+    }
+  }
+);
+
+// ============================================================================
 // SCHEDULED FUNCTIONS
 // ============================================================================
 

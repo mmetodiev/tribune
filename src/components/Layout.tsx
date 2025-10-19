@@ -1,10 +1,15 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
+// @ts-ignore - JSX module
+import { useAuth } from "@/contexts/auth";
+import { useArticlesContext } from "@/contexts/ArticlesContext";
 
 export default function Layout() {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
+  const { isAuthenticated } = useAuth();
+  const { clearCache } = useArticlesContext();
 
   const handleSignOut = async () => {
     try {
@@ -14,31 +19,52 @@ export default function Layout() {
     }
   };
 
+  const handleRefreshArticles = () => {
+    clearCache();
+    window.location.reload();
+  };
+
   if (!isAdmin) {
     // User-facing layout (simple header)
+    const isHomePage = location.pathname === "/";
+    
     return (
       <div className="min-h-screen bg-gray-50">
-        <nav className="bg-white shadow">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <Link to="/" className="text-xl font-bold">
-              Tribune
-            </Link>
-            <div className="space-x-4">
-              <Link to="/" className="hover:text-blue-600">
-                News
+        {isAuthenticated && (
+          <nav className="bg-white shadow">
+            <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+              <Link to="/" className="text-xl font-bold">
+                Tribune
               </Link>
-              <Link to="/admin" className="hover:text-blue-600">
-                Admin
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="text-gray-600 hover:text-red-600"
-              >
-                Sign Out
-              </button>
+              <div className="flex items-center space-x-4">
+                <Link to="/" className="hover:text-blue-600">
+                  News
+                </Link>
+                {isHomePage && (
+                  <button
+                    onClick={handleRefreshArticles}
+                    className="text-gray-600 hover:text-blue-600 flex items-center gap-1"
+                    title="Refresh articles"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-sm">Refresh</span>
+                  </button>
+                )}
+                <Link to="/admin" className="hover:text-blue-600">
+                  Admin
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-gray-600 hover:text-red-600"
+                >
+                  Sign Out
+                </button>
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
+        )}
         <main>
           <Outlet />
         </main>

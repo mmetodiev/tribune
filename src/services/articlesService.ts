@@ -5,6 +5,8 @@ import {
   limit as firestoreLimit, 
   where,
   getDocs,
+  getDoc,
+  doc,
   onSnapshot,
   Unsubscribe,
   Timestamp 
@@ -154,5 +156,26 @@ export function subscribeToSourceArticles(
       console.error('Error in source articles subscription:', error);
     }
   );
+}
+
+/**
+ * Gets a single article by ID
+ * @param articleId The article ID to fetch
+ * @returns Promise with article or null if not found
+ */
+export async function getArticleById(articleId: string): Promise<Article | null> {
+  try {
+    const docRef = doc(db, 'articles', articleId);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return null;
+    }
+    
+    return docToArticle(docSnap);
+  } catch (error) {
+    console.error('Error fetching article by ID:', error);
+    throw error;
+  }
 }
 

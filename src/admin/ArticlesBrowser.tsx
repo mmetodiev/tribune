@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useArticles } from "@/hooks/useArticles";
 import { useSources } from "@/hooks/useSources";
 import { TextExtractionTester } from "./components/TextExtractionTester";
@@ -173,14 +174,19 @@ export default function ArticlesBrowser() {
                 {/* Article Header */}
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div className="flex-1">
-                    <a
-                      href={article.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <Link
+                      to={`/article/${article.id}`}
                       className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+                      onClick={(e) => {
+                        // Allow opening original with Cmd/Ctrl+Click
+                        if (e.metaKey || e.ctrlKey) {
+                          e.preventDefault();
+                          window.open(article.url, '_blank');
+                        }
+                      }}
                     >
                       {article.title}
-                    </a>
+                    </Link>
                   </div>
                   {article.imageUrl && (
                     <img

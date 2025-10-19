@@ -9,6 +9,7 @@ import Settings from "@/admin/Settings";
 
 // User pages
 import NewsView from "@/user/NewsView";
+import ArticleReader from "@/user/ArticleReader";
 
 // Auth pages (from existing modules)
 // @ts-ignore - JSX module
@@ -26,6 +27,10 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <NewsView />,
+      },
+      {
+        path: "article/:articleId",
+        element: <ArticleReader />,
       },
       {
         path: "admin",
