@@ -1,44 +1,18 @@
-import { useState, useEffect } from "react";
-import { getArticles, getSources, getCategories } from "@/lib/api";
-import type { Article, Source, Category } from "@/types";
+import { useState } from "react";
+import { useArticles } from "@/hooks/useArticles";
+import { useSources } from "@/hooks/useSources";
 
 export default function ArticlesBrowser() {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [sources, setSources] = useState<Source[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use hooks for data fetching
+  const { articles, loading: articlesLoading, error: articlesError } = useArticles({ limit: 500 });
+  const { sources, loading: sourcesLoading } = useSources();
+  
+  const loading = articlesLoading || sourcesLoading;
+  const error = articlesError;
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [articlesRes, sourcesRes, categoriesRes] = await Promise.all([
-        getArticles(500), // Get more articles
-        getSources(),
-        getCategories(),
-      ]);
-
-      if (articlesRes.success) setArticles(articlesRes.articles);
-      if (sourcesRes.success) setSources(sourcesRes.sources);
-      if (categoriesRes.success) setCategories(categoriesRes.categories);
-    } catch (err) {
-      console.error("Failed to load articles:", err);
-      setError("Failed to load articles");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function formatDate(timestamp: any): string {
     if (!timestamp) return "No date";
@@ -61,16 +35,6 @@ export default function ArticlesBrowser() {
     });
   }
 
-  function getCategoryName(categoryId: string): string {
-    const category = categories.find((c) => c.id === categoryId);
-    return category ? category.name : categoryId;
-  }
-
-  function getCategoryColor(categoryId: string): string {
-    const category = categories.find((c) => c.id === categoryId);
-    return category?.color || "#6B7280";
-  }
-
   // Filter articles
   const filteredArticles = articles.filter((article) => {
     // Search filter
@@ -87,13 +51,6 @@ export default function ArticlesBrowser() {
     // Source filter
     if (selectedSource !== "all" && article.sourceId !== selectedSource) {
       return false;
-    }
-
-    // Category filter
-    if (selectedCategory !== "all") {
-      if (!article.categories || !article.categories.includes(selectedCategory)) {
-        return false;
-      }
     }
 
     return true;
@@ -127,7 +84,7 @@ export default function ArticlesBrowser() {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -160,34 +117,14 @@ export default function ArticlesBrowser() {
               ))}
             </select>
           </div>
-
-          {/* Category Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category
-            </label>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="all">All Categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.icon} {category.name}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
-        {(searchQuery || selectedSource !== "all" || selectedCategory !== "all") && (
+        {(searchQuery || selectedSource !== "all") && (
           <div className="mt-4 flex items-center gap-2">
             <button
               onClick={() => {
                 setSearchQuery("");
                 setSelectedSource("all");
-                setSelectedCategory("all");
               }}
               className="text-sm text-blue-600 hover:text-blue-700"
             >
@@ -280,26 +217,6 @@ export default function ArticlesBrowser() {
                     <>
                       <span className="text-gray-400">•</span>
                       <span className="text-gray-600">{article.author}</span>
-                    </>
-                  )}
-
-                  {/* Categories */}
-                  {article.categories && article.categories.length > 0 && (
-                    <>
-                      <span className="text-gray-400">•</span>
-                      <div className="flex flex-wrap gap-2">
-                        {article.categories.map((categoryId) => (
-                          <span
-                            key={categoryId}
-                            className="px-2 py-1 rounded-full text-xs font-medium text-white"
-                            style={{
-                              backgroundColor: getCategoryColor(categoryId),
-                            }}
-                          >
-                            {getCategoryName(categoryId)}
-                          </span>
-                        ))}
-                      </div>
                     </>
                   )}
                 </div>

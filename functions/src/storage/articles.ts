@@ -22,8 +22,6 @@ function toFirestoreArticle(normalized: NormalizedArticle): Omit<Article, "id"> 
       : null,
     imageUrl: normalized.imageUrl,
     fetchedAt: Timestamp.fromDate(normalized.fetchedAt),
-    categories: [], // Will be populated by categorization
-    autoCategories: [],
     read: false,
     bookmarked: false,
     hidden: false,
@@ -151,29 +149,7 @@ export async function getArticlesBySource(
   }
 }
 
-/**
- * Retrieves articles by category
- */
-export async function getArticlesByCategory(
-  categoryId: string,
-  limit = 50
-): Promise<Article[]> {
-  try {
-    const snapshot = await articlesCollection
-      .where("categories", "array-contains", categoryId)
-      .orderBy("fetchedAt", "desc")
-      .limit(limit)
-      .get();
-
-    return snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Article[];
-  } catch (error) {
-    logger.error("Failed to get articles by category", { categoryId, error });
-    throw error;
-  }
-}
+// getArticlesByCategory removed in Sprint 8 - categories system removed
 
 /**
  * Retrieves recent articles
@@ -243,18 +219,4 @@ export async function deleteOldArticles(daysToKeep: number): Promise<number> {
   }
 }
 
-/**
- * Updates article categories
- */
-export async function updateArticleCategories(
-  articleId: string,
-  categories: string[]
-): Promise<void> {
-  try {
-    await articlesCollection.doc(articleId).update({ categories });
-    logger.debug(`Updated categories for article: ${articleId}`);
-  } catch (error) {
-    logger.error("Failed to update article categories", { articleId, error });
-    throw error;
-  }
-}
+// updateArticleCategories removed in Sprint 8 - categories system removed

@@ -19,18 +19,13 @@ import {
 
 import {
   getArticlesBySource,
-  getArticlesByCategory,
   getRecentArticles,
   deleteOldArticles,
 } from "./storage/articles.js";
 
-import {
-  addCategory,
-  updateCategory,
-  deleteCategory,
-  getAllCategories,
-  type CreateCategoryData,
-} from "./storage/categories.js";
+import { getSerendipityArticles as fetchSerendipityArticles } from "./storage/serendipity.js";
+
+// Categories removed in Sprint 8 - focusing on serendipity
 
 import { fetchSource, fetchAndStoreArticles } from "./core/fetchSource.js";
 import { getRecentFetchLogs, createFetchLog } from "./storage/fetchLogs.js";
@@ -180,21 +175,7 @@ export const getSourceArticles = onCall(async (request) => {
   }
 });
 
-/**
- * Gets articles by category
- */
-export const getCategoryArticles = onCall(async (request) => {
-  requireAuth(request);
-
-  try {
-    const { categoryId, limit } = request.data;
-    const articles = await getArticlesByCategory(categoryId, limit);
-    return { success: true, articles };
-  } catch (error) {
-    logger.error("getCategoryArticles failed", { error });
-    throw new HttpsError("internal", "Failed to get articles");
-  }
-});
+// getCategoryArticles removed in Sprint 8 - categories system removed
 
 /**
  * Gets recent articles
@@ -209,6 +190,22 @@ export const getArticles = onCall(async (request) => {
   } catch (error) {
     logger.error("getArticles failed", { error });
     throw new HttpsError("internal", "Failed to get articles");
+  }
+});
+
+/**
+ * Gets serendipity articles (last 3 days, evenly distributed across sources, randomized)
+ */
+export const getSerendipityArticles = onCall(async (request) => {
+  requireAuth(request);
+
+  try {
+    const { totalArticles } = request.data || { totalArticles: 20 };
+    const articles = await fetchSerendipityArticles(totalArticles);
+    return { success: true, articles };
+  } catch (error) {
+    logger.error("getSerendipityArticles failed", { error });
+    throw new HttpsError("internal", "Failed to get serendipity articles");
   }
 });
 
@@ -229,71 +226,9 @@ export const cleanupOldArticles = onCall(async (request) => {
 });
 
 // ============================================================================
-// CATEGORY FUNCTIONS
+// CATEGORY FUNCTIONS - REMOVED IN SPRINT 8
 // ============================================================================
-
-/**
- * Creates a new category
- */
-export const createCategory = onCall(async (request) => {
-  requireAuth(request);
-
-  try {
-    const categoryData = request.data as CreateCategoryData;
-    const categoryId = await addCategory(categoryData);
-    return { success: true, categoryId };
-  } catch (error) {
-    logger.error("createCategory failed", { error });
-    throw new HttpsError("internal", "Failed to create category");
-  }
-});
-
-/**
- * Updates an existing category
- */
-export const modifyCategory = onCall(async (request) => {
-  requireAuth(request);
-
-  try {
-    const { id, updates } = request.data;
-    await updateCategory(id, updates);
-    return { success: true };
-  } catch (error) {
-    logger.error("modifyCategory failed", { error });
-    throw new HttpsError("internal", "Failed to update category");
-  }
-});
-
-/**
- * Deletes a category
- */
-export const removeCategory = onCall(async (request) => {
-  requireAuth(request);
-
-  try {
-    const { id } = request.data;
-    await deleteCategory(id);
-    return { success: true };
-  } catch (error) {
-    logger.error("removeCategory failed", { error });
-    throw new HttpsError("internal", "Failed to delete category");
-  }
-});
-
-/**
- * Gets all categories
- */
-export const getCategories = onCall(async (request) => {
-  requireAuth(request);
-
-  try {
-    const categories = await getAllCategories();
-    return { success: true, categories };
-  } catch (error) {
-    logger.error("getCategories failed", { error });
-    throw new HttpsError("internal", "Failed to get categories");
-  }
-});
+// Categories system removed to focus on serendipity and random article distribution
 
 // ============================================================================
 // FETCH FUNCTIONS
@@ -401,5 +336,8 @@ export const getFetchLogs = onCall(async (request) => {
 // SCHEDULED FUNCTIONS
 // ============================================================================
 
-// Export the scheduled fetch job
+// Export the scheduled fetch job (runs every 12 hours)
 export { scheduledFetch } from "./scheduled/fetchJob.js";
+
+// Export the scheduled cleanup job (runs daily at 2 AM)
+export { scheduledCleanup } from "./scheduled/cleanupJob.js";

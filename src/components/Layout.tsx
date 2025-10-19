@@ -76,16 +76,6 @@ export default function Layout() {
             Sources
           </Link>
           <Link
-            to="/admin/categories"
-            className={`block px-6 py-3 ${
-              location.pathname === "/admin/categories"
-                ? "bg-blue-50 text-blue-600 border-r-4 border-blue-600"
-                : "text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Categories
-          </Link>
-          <Link
             to="/admin/articles"
             className={`block px-6 py-3 ${
               location.pathname === "/admin/articles"

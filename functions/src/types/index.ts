@@ -63,10 +63,6 @@ export interface Article {
   // System fields
   fetchedAt: Timestamp;
 
-  // Categorization
-  categories: string[]; // category IDs
-  autoCategories: string[]; // AI-suggested, future phase
-
   // User interaction (future)
   read: boolean;
   bookmarked: boolean;

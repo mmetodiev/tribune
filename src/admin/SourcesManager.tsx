@@ -1,40 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Source } from "@/types";
-import { getSources, deleteSource as deleteSourceAPI, toggleSource, manualFetchSource } from "@/lib/api";
+import { deleteSource as deleteSourceAPI, toggleSource, manualFetchSource } from "@/lib/api";
+import { useSources } from "@/hooks/useSources";
 import AddSourceModal from "./components/AddSourceModal";
 import TestSourceModal from "./components/TestSourceModal";
 
 export default function SourcesManager() {
-  const [sources, setSources] = useState<Source[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Use hook for data fetching
+  const { sources, loading, error, refetch } = useSources();
+  
   const [showAddModal, setShowAddModal] = useState(false);
   const [testingSource, setTestingSource] = useState<Source | null>(null);
   const [fetchingSourceId, setFetchingSourceId] = useState<string | null>(null);
 
-  const loadSources = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const result = await getSources();
-      if (result.success) {
-        setSources(result.sources);
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to load sources");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadSources();
-  }, []);
-
   const handleToggle = async (id: string) => {
     try {
       await toggleSource(id);
-      await loadSources();
+      await refetch();
     } catch (err: any) {
       alert("Failed to toggle source: " + err.message);
     }
@@ -46,7 +28,7 @@ export default function SourcesManager() {
     }
     try {
       await deleteSourceAPI(id);
-      await loadSources();
+      await refetch();
     } catch (err: any) {
       alert("Failed to delete source: " + err.message);
     }
@@ -61,7 +43,7 @@ export default function SourcesManager() {
       setFetchingSourceId(id);
       await manualFetchSource(id);
       alert("Fetch completed successfully!");
-      await loadSources();
+      await refetch();
     } catch (err: any) {
       alert("Fetch failed: " + err.message);
     } finally {
@@ -221,7 +203,7 @@ export default function SourcesManager() {
           onClose={() => setShowAddModal(false)}
           onSuccess={() => {
             setShowAddModal(false);
-            loadSources();
+            refetch();
           }}
         />
       )}

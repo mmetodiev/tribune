@@ -1,78 +1,43 @@
-import { useEffect, useState } from 'react';
-import { getArticles, getCategories } from '@/lib/api';
-import type { Article, Category } from '@/types';
+import { useSerendipityArticles } from '@/hooks/useSerendipityArticles';
 
 export default function NewsView() {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Fetch 40 serendipity articles (last 3 days, evenly distributed, randomized)
+  // 20 for sidebar + 20 for main content
+  const { articles, loading } = useSerendipityArticles({ 
+    totalArticles: 40,
+    daysBack: 3 
+  });
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch articles using the API (Firebase Function)
-        const [articlesRes, categoriesRes] = await Promise.all([
-          getArticles(20), // Get 20 latest articles
-          getCategories(),
-        ]);
+  // Helper function to format dates - removed as most articles don't have dates
+  // function formatDate(timestamp: any): string {
+  //   if (!timestamp) return '';
+  //   let date: Date;
+  //   if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+  //     date = timestamp.toDate();
+  //   } else if (timestamp.seconds) {
+  //     date = new Date(timestamp.seconds * 1000);
+  //   } else {
+  //     date = new Date(timestamp);
+  //   }
+  //   return date.toLocaleDateString('en-US', {
+  //     year: 'numeric',
+  //     month: 'short',
+  //     day: 'numeric',
+  //   });
+  // }
 
-        if (articlesRes.success) {
-          setArticles(articlesRes.articles);
-        }
+  // Article distribution
+  // Left sidebar: 20 articles (split into 3 sections)
+  const leftColumn = articles.slice(0, 20);
+  const topStories = leftColumn.slice(0, 7);
+  const businessMarkets = leftColumn.slice(7, 14);
+  const thisWeek = leftColumn.slice(14, 20);
 
-        if (categoriesRes.success) {
-          setCategories(categoriesRes.categories);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
-
-  // Helper function to format dates
-  function formatDate(timestamp: any): string {
-    if (!timestamp) return '';
-
-    let date: Date;
-    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
-      date = timestamp.toDate();
-    } else if (timestamp.seconds) {
-      date = new Date(timestamp.seconds * 1000);
-    } else {
-      date = new Date(timestamp);
-    }
-
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  }
-
-  // Helper function to get articles by category
-  const getArticlesByCategory = (categorySlug: string, maxCount: number) => {
-    const category = categories.find(c => c.slug === categorySlug);
-    if (!category) return articles.slice(0, maxCount);
-
-    return articles
-      .filter(article => article.categories.includes(category.id))
-      .slice(0, maxCount);
-  };
-
-  // Get featured article (first article)
-  const featuredArticle = articles[0];
-
-  // Get articles for row 2 (next 4 articles)
-  const row2Articles = articles.slice(1, 5);
-
-  // Get sidebar articles - try to diversify by category
-  const topStories = articles.slice(5, 9);
-  const businessArticles = getArticlesByCategory('business', 5);
-  const thisWeekArticles = articles.slice(9, 14);
+  // Right main content: 20 articles
+  const mainContent = articles.slice(20, 40);
+  const row1Articles = mainContent.slice(0, 6);   // 3 cols × 2 articles
+  const row2Articles = mainContent.slice(6, 10);  // 4 cols × 1 article
+  const row3Articles = mainContent.slice(10, 20); // 2 cols × 5 articles
 
   if (loading) {
     return (
@@ -100,28 +65,28 @@ export default function NewsView() {
     <div className="min-h-screen bg-[#f9f7f1] text-[#2f2f2f] py-8">
       {/* Masthead */}
       <div className="text-center mb-6">
-        <h1 className="font-serif font-black text-6xl md:text-7xl uppercase leading-none mb-4">
+        <h1 className="font-serif font-black text-5xl sm:text-6xl md:text-7xl uppercase leading-none mb-4">
           Tribune
         </h1>
 
         {/* Subhead with date only - full width lines */}
-        <div className="border-t-2 border-b-2 border-[#2f2f2f] py-3">
-          <div className="text-xs uppercase">
+        <div className="border-t-2 border-b-2 border-[#2f2f2f] py-2 sm:py-3">
+          <div className="text-xs sm:text-sm uppercase px-2">
             <span className="font-semibold">New York, NY</span>
-            <span className="mx-2">—</span>
-            <span>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            <span className="mx-1 sm:mx-2">—</span>
+            <span className="text-xs">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4">
         {/* Main Layout: Left Column (1/5) + Main Content (4/5) */}
-        <div className="flex gap-6">
-          {/* LEFT COLUMN - 1/5 width */}
-          <div className="w-1/5 border-r-2 border-[#2f2f2f] pr-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* LEFT COLUMN - 1/5 width on desktop, full width on mobile */}
+          <div className="w-full lg:w-1/5 lg:border-r-2 border-[#2f2f2f] lg:pr-6">
             {/* Section 1: Top Stories */}
             {topStories.length > 0 && (
-              <div className="mb-8 pb-6 border-b-2 border-[#2f2f2f]">
+              <div className="mb-6 lg:mb-8 pb-4 lg:pb-6 border-b-2 border-[#2f2f2f]">
                 <h3 className="uppercase mb-4 border-b border-[#2f2f2f] pb-2 text-xl tracking-wide" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
                   Top Stories
                 </h3>
@@ -140,14 +105,14 @@ export default function NewsView() {
             )}
 
             {/* Section 2: Business & Markets */}
-            {businessArticles.length > 0 && (
-              <div className="mb-8 pb-6 border-b-2 border-[#2f2f2f]">
+            {businessMarkets.length > 0 && (
+              <div className="mb-6 lg:mb-8 pb-4 lg:pb-6 border-b-2 border-[#2f2f2f]">
                 <h3 className="uppercase mb-4 border-b border-[#2f2f2f] pb-2 text-xl tracking-wide" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
                   Business & Markets
                 </h3>
                 <div className="space-y-2">
-                  {businessArticles.map((article, index) => (
-                    <div key={article.id} className={index < businessArticles.length - 1 ? "border-b border-gray-400 pb-2" : "pb-2"}>
+                  {businessMarkets.map((article, index) => (
+                    <div key={article.id} className={index < businessMarkets.length - 1 ? "border-b border-gray-400 pb-2" : "pb-2"}>
                       <a href={article.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
                         <h4 className="font-bold text-base leading-snug" style={{ fontFamily: 'Lato, sans-serif' }}>
                           {article.title}
@@ -160,14 +125,14 @@ export default function NewsView() {
             )}
 
             {/* Section 3: This Week */}
-            {thisWeekArticles.length > 0 && (
+            {thisWeek.length > 0 && (
               <div>
                 <h3 className="uppercase mb-4 border-b border-[#2f2f2f] pb-2 text-xl tracking-wide" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
                   This Week
                 </h3>
                 <div className="space-y-2">
-                  {thisWeekArticles.map((article, index) => (
-                    <div key={article.id} className={index < thisWeekArticles.length - 1 ? "border-b border-gray-400 pb-2" : "pb-2"}>
+                  {thisWeek.map((article, index) => (
+                    <div key={article.id} className={index < thisWeek.length - 1 ? "border-b border-gray-400 pb-2" : "pb-2"}>
                       <a href={article.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
                         <h4 className="font-bold text-base leading-snug" style={{ fontFamily: 'Lato, sans-serif' }}>
                           {article.title}
@@ -180,104 +145,115 @@ export default function NewsView() {
             )}
           </div>
 
-          {/* MAIN CONTENT - 4/5 width */}
-          <div className="w-4/5">
-            {/* ROW 1: Main Article */}
-            {featuredArticle && (
-              <div className="mb-8 border-b-2 border-[#2f2f2f] pb-8">
-                {/* Main Heading - Full Width */}
-                <a href={featuredArticle.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                  <h2 className="font-serif font-bold text-4xl leading-tight mb-6 text-center">
-                    {featuredArticle.title}
-                  </h2>
-                </a>
+          {/* MAIN CONTENT - 4/5 width on desktop */}
+          <div className="w-full lg:w-4/5">
+            {/* ROW 1: 3 columns × 2 articles each = 6 total */}
+            {row1Articles.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 border-b-2 border-[#2f2f2f] pb-8 mb-8">
+                {[0, 1, 2].map((colIndex) => {
+                  const colArticles = row1Articles.slice(colIndex * 2, colIndex * 2 + 2);
+                  if (colArticles.length === 0) return null;
 
-                {/* Photo (2/3) + Summary (1/3) */}
-                <div className="flex gap-6">
-                  {/* Featured Photo - 2/3 width */}
-                  <div className="w-2/3">
-                    {featuredArticle.imageUrl ? (
-                      <img
-                        src={featuredArticle.imageUrl}
-                        alt={featuredArticle.title}
-                        className="w-full h-96 object-cover mb-3 grayscale opacity-90"
-                      />
-                    ) : (
-                      <div className="w-full h-96 bg-gradient-to-br from-amber-100 to-amber-200 mb-3 flex items-center justify-center">
-                        <span className="text-amber-400 text-sm italic">[ Image not available ]</span>
-                      </div>
-                    )}
-                    <p className="text-xs italic">
-                      {featuredArticle.sourceName} • {featuredArticle.author || 'Staff'}
-                      {featuredArticle.publishedDate && (
-                        <> • {formatDate(featuredArticle.publishedDate)}</>
-                      )}
-                    </p>
-                  </div>
+                  return (
+                    <div key={colIndex} className={colIndex < 2 ? "lg:border-r border-[#2f2f2f] lg:pr-4" : ""}>
+                      {colArticles.map((article, index) => (
+                        <div key={article.id} className={index === 0 ? "mb-6" : ""}>
+                          <a href={article.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            <h3 className="font-serif font-bold text-lg mb-2 border-b border-[#2f2f2f] pb-2">
+                              {article.title}
+                            </h3>
+                          </a>
 
-                  {/* Summary Text - 1/3 width */}
-                  <div className="w-1/3">
-                    {featuredArticle.summary && (
-                      <p className="text-sm leading-relaxed mb-3">
-                        {featuredArticle.summary}
-                      </p>
-                    )}
-                    <a
-                      href={featuredArticle.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-bold text-[#2f2f2f] hover:underline"
-                    >
-                      Read full article →
-                    </a>
-                  </div>
-                </div>
+                          {article.imageUrl && (
+                            <img
+                              src={article.imageUrl}
+                              alt={article.title}
+                              className="w-full h-32 object-cover mb-2 grayscale opacity-90"
+                            />
+                          )}
+
+                          {article.summary && (
+                            <p className="text-sm leading-relaxed mb-2 line-clamp-3">
+                              {article.summary}
+                            </p>
+                          )}
+
+                          <p className="text-xs text-gray-600">
+                            {article.sourceName}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
-            {/* ROW 2: Four Equal Columns */}
+            {/* ROW 2: 4 columns × 1 article each = 4 total */}
             {row2Articles.length > 0 && (
-              <div className="grid grid-cols-4 gap-6 border-b-2 border-[#2f2f2f] pb-8 mb-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 border-b-2 border-[#2f2f2f] pb-8 mb-8">
                 {row2Articles.map((article, index) => (
-                  <div key={article.id} className={index < 3 ? "border-r border-[#2f2f2f] pr-4" : ""}>
+                  <div key={article.id} className={index < 3 ? "lg:border-r border-[#2f2f2f] lg:pr-3" : ""}>
                     <a href={article.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                      <h3 className="font-serif font-bold text-xl text-center mb-3 pb-2 border-b border-[#2f2f2f]">
+                      <h3 className="font-serif font-bold text-base text-center mb-2 pb-2 border-b border-[#2f2f2f]">
                         {article.title}
                       </h3>
                     </a>
 
                     {article.imageUrl && (
-                      <>
-                        <img
-                          src={article.imageUrl}
-                          alt={article.title}
-                          className="w-full h-32 object-cover mb-2 grayscale opacity-90"
-                        />
-                        <p className="text-xs italic mb-2">{article.sourceName}</p>
-                      </>
+                      <img
+                        src={article.imageUrl}
+                        alt={article.title}
+                        className="w-full h-24 object-cover mb-2 grayscale opacity-90"
+                      />
                     )}
 
-                    {article.summary && (
-                      <p className="text-sm leading-relaxed mb-3 line-clamp-4">
-                        {article.summary}
-                      </p>
-                    )}
-
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-gray-600 text-center">
                       {article.sourceName}
-                      {article.publishedDate && (
-                        <> • {formatDate(article.publishedDate)}</>
-                      )}
                     </p>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* ROW 3: 2 columns × 5 articles each = 10 total */}
+            {row3Articles.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {[0, 1].map((colIndex) => {
+                  const colArticles = row3Articles.slice(colIndex * 5, colIndex * 5 + 5);
+                  if (colArticles.length === 0) return null;
+
+                  return (
+                    <div key={colIndex} className={colIndex === 0 ? "lg:border-r border-[#2f2f2f] lg:pr-6" : ""}>
+                      {colArticles.map((article, index) => (
+                        <div key={article.id} className={index < colArticles.length - 1 ? "border-b border-gray-400 pb-4 mb-4" : "pb-4"}>
+                          <a href={article.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                            <h4 className="font-serif font-bold text-base mb-2">
+                              {article.title}
+                            </h4>
+                          </a>
+
+                          {article.summary && (
+                            <p className="text-sm text-gray-700 mb-2 line-clamp-2">
+                              {article.summary}
+                            </p>
+                          )}
+
+                          <p className="text-xs text-gray-600">
+                            {article.sourceName}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="text-center pt-6">
+        <div className="text-center pt-6 mt-8 border-t-2 border-[#2f2f2f]">
           <p className="text-xs uppercase">End of Current Edition</p>
         </div>
       </div>

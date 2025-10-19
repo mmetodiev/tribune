@@ -5,9 +5,6 @@ import { fetchScrape } from "../scrapers/scraper.js";
 import { normalizeArticle } from "../scrapers/normalize.js";
 import { saveArticleBatch } from "../storage/articles.js";
 import { updateSourceStats } from "../storage/sources.js";
-import { categorizeArticles } from "../categorizers/ruleBased.js";
-import { updateArticleCategories } from "../storage/articles.js";
-import { hashUrl } from "../scrapers/normalize.js";
 
 /**
  * Result of fetching and storing articles from a source
@@ -94,20 +91,8 @@ export async function fetchAndStoreArticles(
       };
     }
 
-    // Categorize articles
-    const categoriesMap = await categorizeArticles(normalizedArticles);
-
-    // Save articles to Firestore
+    // Save articles to Firestore (no categorization in Sprint 8)
     const savedCount = await saveArticleBatch(normalizedArticles);
-
-    // Update categories for saved articles
-    for (const article of normalizedArticles) {
-      const categories = categoriesMap.get(article.url);
-      if (categories && categories.length > 0) {
-        const articleId = hashUrl(article.url);
-        await updateArticleCategories(articleId, categories);
-      }
-    }
 
     // Update source stats with success
     await updateSourceStats(source.id, true, savedCount, null);

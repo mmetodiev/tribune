@@ -1,62 +1,34 @@
-import { useState, useEffect } from "react";
-import {
-  getSources,
-  getCategories,
-  getArticles,
-  getFetchLogs,
-  manualFetchAll,
-} from "@/lib/api";
-import type { Source, Category, Article, FetchLog } from "@/types";
+import { useState } from "react";
+import { manualFetchAll } from "@/lib/api";
+import { useArticles } from "@/hooks/useArticles";
+import { useSources } from "@/hooks/useSources";
+import { useFetchLogs } from "@/hooks/useFetchLogs";
 
 export default function Dashboard() {
-  const [sources, setSources] = useState<Source[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [fetchLogs, setFetchLogs] = useState<FetchLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Use hooks for data fetching
+  const { sources, loading: sourcesLoading } = useSources();
+  const { articles, loading: articlesLoading, refetch: refetchArticles } = useArticles({ limit: 100 });
+  const { logs: fetchLogs, loading: logsLoading, refetch: refetchLogs } = useFetchLogs({ limit: 10 });
+  
+  const loading = sourcesLoading || articlesLoading || logsLoading;
+  
   const [fetching, setFetching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedLog, setExpandedLog] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  async function loadDashboardData() {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const [sourcesRes, categoriesRes, articlesRes, logsRes] =
-        await Promise.all([
-          getSources(),
-          getCategories(),
-          getArticles(100),
-          getFetchLogs(10),
-        ]);
-
-      if (sourcesRes.success) setSources(sourcesRes.sources);
-      if (categoriesRes.success) setCategories(categoriesRes.categories);
-      if (articlesRes.success) setArticles(articlesRes.articles);
-      if (logsRes.success) setFetchLogs(logsRes.logs);
-    } catch (err) {
-      console.error("Failed to load dashboard data:", err);
-      setError("Failed to load dashboard data");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function handleManualFetch() {
     setFetching(true);
     setError(null);
 
     try {
-      const result = await manualFetchAll();
+      const result: any = await manualFetchAll();
       console.log("Manual fetch result:", result);
 
       // Reload data to show new articles and logs
-      await loadDashboardData();
+      await Promise.all([
+        refetchArticles(),
+        refetchLogs(),
+      ]);
 
       alert(
         `Fetch completed!\nArticles fetched: ${result.totalArticles}\nErrors: ${result.errorCount}`
@@ -110,7 +82,7 @@ export default function Dashboard() {
       } else if ((article.fetchedAt as any).seconds) {
         fetchDate = new Date((article.fetchedAt as any).seconds * 1000);
       } else {
-        fetchDate = new Date(article.fetchedAt);
+        fetchDate = new Date(article.fetchedAt as any);
       }
 
       return fetchDate > yesterday;
@@ -156,7 +128,7 @@ export default function Dashboard() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-600 mb-2">
             Total Sources
@@ -174,15 +146,6 @@ export default function Dashboard() {
           <p className="text-3xl font-bold text-gray-900">{articles.length}</p>
           <p className="text-sm text-gray-500 mt-1">
             {articlesLast24h} in last 24h
-          </p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-600 mb-2">
-            Total Categories
-          </h3>
-          <p className="text-3xl font-bold text-gray-900">
-            {categories.length}
           </p>
         </div>
 
@@ -347,22 +310,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {categories.length === 0 && (
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h3 className="font-semibold text-blue-900 mb-2">
-            Create Categories
-          </h3>
-          <p className="text-blue-800 mb-4">
-            Categories help organize your articles automatically.
-          </p>
-          <a
-            href="/admin/categories"
-            className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Add Your First Category
-          </a>
-        </div>
-      )}
+      {/* Categories removed in Sprint 8 - focusing on serendipity */}
     </div>
   );
 }

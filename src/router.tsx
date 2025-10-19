@@ -4,7 +4,6 @@ import Layout from "@/components/Layout";
 // Admin pages
 import Dashboard from "@/admin/Dashboard";
 import SourcesManager from "@/admin/SourcesManager";
-import CategoriesManager from "@/admin/CategoriesManager";
 import ArticlesBrowser from "@/admin/ArticlesBrowser";
 import Settings from "@/admin/Settings";
 
@@ -12,6 +11,7 @@ import Settings from "@/admin/Settings";
 import NewsView from "@/user/NewsView";
 
 // Auth pages (from existing modules)
+// @ts-ignore - JSX module
 import Auth from "@/modules/auth";
 
 const router = createBrowserRouter([
@@ -37,10 +37,6 @@ const router = createBrowserRouter([
           {
             path: "sources",
             element: <SourcesManager />,
-          },
-          {
-            path: "categories",
-            element: <CategoriesManager />,
           },
           {
             path: "articles",
