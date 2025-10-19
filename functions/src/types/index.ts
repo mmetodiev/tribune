@@ -55,10 +55,17 @@ export interface Article {
   sourceName: string; // denormalized for easy display
 
   // Optional fields
-  summary: string;
+  summary: string; // RSS/meta description
   author: string;
   publishedDate: Timestamp | null;
   imageUrl: string;
+
+  // Text extraction & summarization
+  fullText?: string; // Full article text (extracted from HTML)
+  extractedSummary?: string; // Auto-generated summary (first 2-3 sentences)
+  summarizedAt?: Timestamp; // When summary was generated
+  summarizationMethod?: "extractive" | "ai"; // Method used for summarization
+  wordCount?: number; // Word count of full text
 
   // System fields
   fetchedAt: Timestamp;
@@ -142,4 +149,11 @@ export interface NormalizedArticle {
   publishedDate: Date | null;
   imageUrl: string;
   fetchedAt: Date;
+  
+  // Text extraction & summarization
+  fullText?: string;
+  extractedSummary?: string;
+  summarizedAt?: Date;
+  summarizationMethod?: "extractive" | "ai";
+  wordCount?: number;
 }

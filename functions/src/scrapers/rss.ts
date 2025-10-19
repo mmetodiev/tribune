@@ -18,14 +18,36 @@ export async function fetchRSS(source: Source): Promise<FetchResult> {
 
     const feed = await parser.parseURL(source.url);
 
-    const articles: RawArticle[] = feed.items.map((item) => ({
-      title: item.title,
-      url: item.link,
-      summary: item.contentSnippet || item.content || item.description,
-      author: item.creator || item.author,
-      pubDate: item.pubDate || item.isoDate,
-      image: item.enclosure?.url,
-    }));
+    const articles: RawArticle[] = feed.items.map((item) => {
+      // Extract summary from RSS fields
+      let summary = item.contentSnippet || item.content || item.description || "";
+      
+      // Filter out junk summaries (HackerNews RSS only contains "Comments" link)
+      // Also filter out very short or meaningless summaries
+      const junkPatterns = [
+        /^comments$/i,
+        /^read more$/i,
+        /^continue reading$/i,
+        /^view article$/i,
+        /^click here$/i,
+      ];
+      
+      const isJunk = junkPatterns.some(pattern => pattern.test(summary.trim()));
+      const isTooShort = summary.trim().length < 20;
+      
+      if (isJunk || isTooShort) {
+        summary = ""; // Clear junk summaries so extraction kicks in
+      }
+      
+      return {
+        title: item.title,
+        url: item.link,
+        summary,
+        author: item.creator || item.author,
+        pubDate: item.pubDate || item.isoDate,
+        image: item.enclosure?.url,
+      };
+    });
 
     logger.info(`Successfully fetched ${articles.length} articles from ${source.name}`);
 

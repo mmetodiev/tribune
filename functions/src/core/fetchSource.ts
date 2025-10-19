@@ -5,6 +5,8 @@ import { fetchScrape } from "../scrapers/scraper.js";
 import { normalizeArticle } from "../scrapers/normalize.js";
 import { saveArticleBatch } from "../storage/articles.js";
 import { updateSourceStats } from "../storage/sources.js";
+import { extractArticleText, validateExtractedText } from "../scrapers/textExtractor.js";
+import { createShortSummary } from "../summarizers/extractive.js";
 
 /**
  * Result of fetching and storing articles from a source
@@ -91,8 +93,71 @@ export async function fetchAndStoreArticles(
       };
     }
 
-    // Save articles to Firestore (no categorization in Sprint 8)
-    const savedCount = await saveArticleBatch(normalizedArticles);
+    // Text extraction & summarization pipeline
+    // Only extract when RSS summary is missing or too short (< 80 chars)
+    // This prioritizes RSS summaries and reduces unnecessary processing
+    logger.info(`Analyzing ${normalizedArticles.length} articles for text extraction`);
+    
+    const enrichedArticles = await Promise.all(
+      normalizedArticles.map(async (article) => {
+        try {
+          // Skip extraction if RSS already provides a good summary
+          const hasGoodRSSSummary = article.summary && article.summary.length > 80;
+          
+          if (hasGoodRSSSummary) {
+            logger.debug(`Skipping extraction for "${article.title}" (has RSS summary)`);
+            return article;
+          }
+          
+          // Extract text for articles without good RSS summaries
+          logger.info(`Extracting text for "${article.title}" (no/short RSS summary)`);
+          const textResult = await extractArticleText(article.url);
+          
+          // Only add text extraction if successful
+          if (textResult.success && validateExtractedText(textResult)) {
+            article.fullText = textResult.fullText;
+            article.wordCount = textResult.wordCount;
+            
+            // Generate extractive summary from extracted text
+            const summaryResult = createShortSummary(textResult.fullText);
+            
+            if (summaryResult.success) {
+              article.extractedSummary = summaryResult.summary;
+              article.summarizedAt = new Date();
+              article.summarizationMethod = "extractive";
+              
+              logger.info(`Enriched article: ${article.title}`, {
+                wordCount: article.wordCount,
+                summaryLength: article.extractedSummary.length,
+              });
+            }
+          } else {
+            // Log but don't fail - article can still be saved without extraction
+            logger.warn(`Text extraction failed for: ${article.title}`, {
+              url: article.url,
+              error: textResult.error,
+            });
+          }
+        } catch (error) {
+          // Log error but continue - extraction is optional enhancement
+          logger.error(`Error enriching article: ${article.title}`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        
+        return article;
+      })
+    );
+
+    logger.info(`Text extraction complete`, {
+      total: enrichedArticles.length,
+      skipped: enrichedArticles.filter(a => a.summary && a.summary.length > 80).length,
+      extracted: enrichedArticles.filter(a => a.fullText).length,
+      withExtractedSummary: enrichedArticles.filter(a => a.extractedSummary).length,
+    });
+
+    // Save enriched articles to Firestore (includes text extraction & summaries)
+    const savedCount = await saveArticleBatch(enrichedArticles);
 
     // Update source stats with success
     await updateSourceStats(source.id, true, savedCount, null);
@@ -100,6 +165,7 @@ export async function fetchAndStoreArticles(
     logger.info(`Successfully processed ${source.name}`, {
       fetched: fetchResult.articles.length,
       normalized: normalizedArticles.length,
+      enriched: enrichedArticles.filter(a => a.extractedSummary).length,
       saved: savedCount,
     });
 

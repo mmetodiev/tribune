@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useArticles } from "@/hooks/useArticles";
 import { useSources } from "@/hooks/useSources";
+import { TextExtractionTester } from "./components/TextExtractionTester";
 
 export default function ArticlesBrowser() {
   // Use hooks for data fetching
@@ -13,6 +14,9 @@ export default function ArticlesBrowser() {
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSource, setSelectedSource] = useState<string>("all");
+  
+  // Testing
+  const [expandedTestArticle, setExpandedTestArticle] = useState<string | null>(null);
 
   function formatDate(timestamp: any): string {
     if (!timestamp) return "No date";
@@ -221,8 +225,15 @@ export default function ArticlesBrowser() {
                   )}
                 </div>
 
+                {/* Text Extraction Status */}
+                {article.extractedSummary && (
+                  <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded text-xs text-green-700">
+                    ✓ Text extracted ({article.wordCount || 0} words)
+                  </div>
+                )}
+
                 {/* Actions */}
-                <div className="mt-3 flex items-center gap-2">
+                <div className="mt-3 flex items-center gap-3">
                   <a
                     href={article.url}
                     target="_blank"
@@ -231,7 +242,27 @@ export default function ArticlesBrowser() {
                   >
                     Read Article →
                   </a>
+                  
+                  <button
+                    onClick={() => setExpandedTestArticle(
+                      expandedTestArticle === article.id ? null : article.id
+                    )}
+                    className="text-sm text-purple-600 hover:text-purple-700 font-medium"
+                  >
+                    {expandedTestArticle === article.id ? '▼ Hide Test' : '▶ Test Extraction'}
+                  </button>
                 </div>
+
+                {/* Text Extraction Tester */}
+                {expandedTestArticle === article.id && (
+                  <div className="mt-4 pt-4 border-t">
+                    <TextExtractionTester
+                      articleId={article.id}
+                      articleUrl={article.url}
+                      articleTitle={article.title}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>

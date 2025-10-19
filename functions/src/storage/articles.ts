@@ -10,7 +10,7 @@ const articlesCollection = db.collection("articles");
  * Converts a NormalizedArticle to a Firestore Article document
  */
 function toFirestoreArticle(normalized: NormalizedArticle): Omit<Article, "id"> {
-  return {
+  const article: any = {
     title: normalized.title,
     url: normalized.url,
     sourceId: normalized.sourceId,
@@ -22,10 +22,31 @@ function toFirestoreArticle(normalized: NormalizedArticle): Omit<Article, "id"> 
       : null,
     imageUrl: normalized.imageUrl,
     fetchedAt: Timestamp.fromDate(normalized.fetchedAt),
+    
+    // User interaction fields
     read: false,
     bookmarked: false,
     hidden: false,
   };
+  
+  // Only include text extraction fields if they exist (avoid undefined values)
+  if (normalized.fullText) {
+    article.fullText = normalized.fullText;
+  }
+  if (normalized.extractedSummary) {
+    article.extractedSummary = normalized.extractedSummary;
+  }
+  if (normalized.summarizedAt) {
+    article.summarizedAt = Timestamp.fromDate(normalized.summarizedAt);
+  }
+  if (normalized.summarizationMethod) {
+    article.summarizationMethod = normalized.summarizationMethod;
+  }
+  if (normalized.wordCount) {
+    article.wordCount = normalized.wordCount;
+  }
+  
+  return article;
 }
 
 /**
@@ -57,7 +78,9 @@ export async function saveArticle(article: NormalizedArticle): Promise<boolean> 
 }
 
 /**
- * Saves multiple articles in a batch with deduplication
+ * Saves multiple articles in a batch with smart deduplication
+ * - New articles: saved completely
+ * - Existing articles: updated if they have new text extraction fields
  * @returns count of new articles saved
  */
 export async function saveArticleBatch(
@@ -74,25 +97,50 @@ export async function saveArticleBatch(
       ...articleIds.map((id) => articlesCollection.doc(id))
     );
 
-    const existingIds = new Set(
-      existingDocs.filter((doc) => doc.exists).map((doc) => doc.id)
+    const existingMap = new Map(
+      existingDocs
+        .filter((doc) => doc.exists)
+        .map((doc) => [doc.id, doc.data()])
     );
 
-    // Filter out existing articles
-    const newArticles = articles.filter(
-      (article) => !existingIds.has(hashUrl(article.url))
-    );
+    // Separate new articles from existing ones
+    const newArticles: NormalizedArticle[] = [];
+    const articlesToUpdate: NormalizedArticle[] = [];
 
-    if (newArticles.length === 0) {
+    for (const article of articles) {
+      const articleId = hashUrl(article.url);
+      const existingData = existingMap.get(articleId);
+
+      if (!existingData) {
+        // Brand new article
+        newArticles.push(article);
+      } else {
+        // Article exists - check if we should update it
+        const hasNewExtraction = article.extractedSummary && !existingData.extractedSummary;
+        const hasNewFullText = article.fullText && !existingData.fullText;
+        
+        if (hasNewExtraction || hasNewFullText) {
+          // Update existing article with new extraction data
+          articlesToUpdate.push(article);
+          logger.info(`Updating article with text extraction: ${article.title}`);
+        } else {
+          // Skip - already exists with all data
+          logger.debug(`Skipping duplicate: ${article.title}`);
+        }
+      }
+    }
+
+    if (newArticles.length === 0 && articlesToUpdate.length === 0) {
       logger.info("No new articles to save (all duplicates)");
       return 0;
     }
 
-    // Batch write new articles (max 500 per batch)
+    // Batch write new and updated articles (max 500 per batch)
     const batches: WriteBatch[] = [];
     let currentBatch = db.batch();
     let batchCount = 0;
 
+    // Add new articles
     for (const article of newArticles) {
       const articleId = hashUrl(article.url);
       const docRef = articlesCollection.doc(articleId);
@@ -101,7 +149,34 @@ export async function saveArticleBatch(
       currentBatch.set(docRef, firestoreArticle);
       batchCount++;
 
-      // Firestore batch limit is 500 operations
+      if (batchCount === 500) {
+        batches.push(currentBatch);
+        currentBatch = db.batch();
+        batchCount = 0;
+      }
+    }
+
+    // Update existing articles with new extraction data
+    for (const article of articlesToUpdate) {
+      const articleId = hashUrl(article.url);
+      const docRef = articlesCollection.doc(articleId);
+      
+      // Only update the extraction fields, preserve other data
+      const updates: any = {};
+      if (article.fullText) updates.fullText = article.fullText;
+      if (article.extractedSummary) updates.extractedSummary = article.extractedSummary;
+      if (article.summarizedAt) updates.summarizedAt = Timestamp.fromDate(article.summarizedAt);
+      if (article.summarizationMethod) updates.summarizationMethod = article.summarizationMethod;
+      if (article.wordCount) updates.wordCount = article.wordCount;
+      
+      // Also clear junk summaries if we have a better extracted one
+      if (article.extractedSummary && article.summary === "") {
+        updates.summary = "";
+      }
+
+      currentBatch.update(docRef, updates);
+      batchCount++;
+
       if (batchCount === 500) {
         batches.push(currentBatch);
         currentBatch = db.batch();
@@ -117,7 +192,9 @@ export async function saveArticleBatch(
     // Commit all batches
     await Promise.all(batches.map((batch) => batch.commit()));
 
-    logger.info(`Saved ${newArticles.length} new articles`);
+    logger.info(
+      `Saved ${newArticles.length} new articles, updated ${articlesToUpdate.length} with text extraction`
+    );
     return newArticles.length;
   } catch (error) {
     logger.error("Failed to save article batch", { error });

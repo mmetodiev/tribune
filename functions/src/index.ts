@@ -336,6 +336,94 @@ export const getFetchLogs = onCall(async (request) => {
 // SCHEDULED FUNCTIONS
 // ============================================================================
 
+// ============================================================================
+// TEXT EXTRACTION & SUMMARIZATION TESTING
+// ============================================================================
+
+/**
+ * Tests text extraction and summarization on a single article
+ * For admin testing purposes
+ */
+export const testTextExtraction = onCall(async (request) => {
+  requireAuth(request);
+
+  try {
+    const { url, articleId } = request.data;
+
+    if (!url && !articleId) {
+      throw new HttpsError("invalid-argument", "Must provide url or articleId");
+    }
+
+    // Import extraction modules
+    const { extractArticleText, validateExtractedText } = await import("./scrapers/textExtractor.js");
+    const { createShortSummary } = await import("./summarizers/extractive.js");
+
+    let testUrl = url;
+
+    // If articleId provided, fetch URL from Firestore
+    if (articleId && !url) {
+      const { getFirestore } = await import("firebase-admin/firestore");
+      const db = getFirestore();
+      const articleDoc = await db.collection("articles").doc(articleId).get();
+      
+      if (!articleDoc.exists) {
+        throw new HttpsError("not-found", "Article not found");
+      }
+      
+      testUrl = articleDoc.data()?.url;
+    }
+
+    if (!testUrl) {
+      throw new HttpsError("invalid-argument", "No URL found");
+    }
+
+    logger.info(`Testing text extraction for: ${testUrl}`);
+
+    // Extract text
+    const textResult = await extractArticleText(testUrl);
+
+    if (!textResult.success) {
+      return {
+        success: false,
+        error: textResult.error,
+      };
+    }
+
+    // Validate extraction
+    const isValid = validateExtractedText(textResult);
+
+    if (!isValid) {
+      return {
+        success: false,
+        error: "Extracted text did not pass validation (too short or too few paragraphs)",
+        fullText: textResult.fullText,
+        wordCount: textResult.wordCount,
+        paragraphs: textResult.paragraphs.length,
+      };
+    }
+
+    // Generate summary
+    const summaryResult = createShortSummary(textResult.fullText);
+
+    return {
+      success: true,
+      fullText: textResult.fullText,
+      extractedSummary: summaryResult.success ? summaryResult.summary : null,
+      wordCount: textResult.wordCount,
+      paragraphs: textResult.paragraphs.length,
+      method: "extractive",
+      error: null,
+    };
+  } catch (error) {
+    logger.error("testTextExtraction failed", { error });
+    throw new HttpsError("internal", "Failed to test text extraction");
+  }
+});
+
+// ============================================================================
+// SCHEDULED FUNCTIONS
+// ============================================================================
+
 // Export the scheduled fetch job (runs every 12 hours)
 export { scheduledFetch } from "./scheduled/fetchJob.js";
 
