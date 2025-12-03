@@ -16,12 +16,16 @@ export async function fetchRSS(source: Source): Promise<FetchResult> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     
-    const response = await fetch(source.url, {
-      signal: controller.signal,
-      headers: { "User-Agent": "Tribune News Aggregator/1.0" },
-    });
-    
-    clearTimeout(timeoutId);
+    let response;
+    try {
+      response = await fetch(source.url, {
+        signal: controller.signal,
+        headers: { "User-Agent": "Tribune News Aggregator/1.0" },
+      });
+    } finally {
+      // Always clear timeout to prevent resource leak
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
