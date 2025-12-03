@@ -38,10 +38,10 @@ export default function ArticleItem({ article, variant = 'large' }: ArticleItemP
           </Link>
         </div>
 
-        {/* Show RSS summary first, fall back to extractedSummary */}
-        {(article.summary || article.extractedSummary) && (
+        {/* Show RSS summary */}
+        {article.summary && (
           <p className="text-sm text-gray-700 mb-2 line-clamp-2">
-            {article.summary || article.extractedSummary}
+            {article.summary}
           </p>
         )}
       </div>
@@ -78,10 +78,10 @@ export default function ArticleItem({ article, variant = 'large' }: ArticleItemP
         />
       )}
 
-      {/* Show RSS summary first, fall back to extractedSummary */}
-      {(article.summary || article.extractedSummary) && (
+      {/* Show RSS summary */}
+      {article.summary && (
         <p className="text-sm leading-relaxed mb-2 line-clamp-3">
-          {article.summary || article.extractedSummary}
+          {article.summary}
         </p>
       )}
     </div>
