@@ -94,8 +94,30 @@ export default function ArticleReader() {
   // Sanitize the summary HTML if it exists
   const sanitizedSummary = article.summary 
     ? DOMPurify.sanitize(article.summary, {
-        ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'b', 'i', 'a'],
-        ALLOWED_ATTR: ['href']
+        ALLOWED_TAGS: [
+          // Text formatting
+          'p', 'br', 'strong', 'em', 'b', 'i', 'u', 's', 'mark', 'small', 'sub', 'sup',
+          // Headings
+          'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+          // Lists
+          'ul', 'ol', 'li',
+          // Links and media
+          'a', 'img', 'figure', 'figcaption',
+          // Quotes and code
+          'blockquote', 'q', 'code', 'pre',
+          // Structural
+          'div', 'span', 'article', 'section',
+          // Tables
+          'table', 'thead', 'tbody', 'tr', 'th', 'td',
+          // Other
+          'hr', 'del', 'ins', 'abbr', 'time'
+        ],
+        ALLOWED_ATTR: [
+          'href', 'src', 'alt', 'title', 'width', 'height', 
+          'class', 'id', 'datetime', 'cite', 'target', 'rel'
+        ],
+        // Allow target="_blank" for links
+        ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
       })
     : "";
 
@@ -164,7 +186,21 @@ export default function ArticleReader() {
         )}
 
         {/* RSS Summary Content */}
-        <div className="prose prose-lg max-w-none prose-p:font-serif prose-p:text-gray-800 prose-p:leading-relaxed prose-p:mb-5 prose-a:text-blue-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:transition-colors prose-strong:text-gray-900 prose-strong:font-semibold prose-em:text-gray-800 prose-em:italic">
+        <div className="prose prose-lg max-w-none 
+          prose-p:font-serif prose-p:text-gray-800 prose-p:leading-relaxed prose-p:mb-5 
+          prose-headings:font-serif prose-headings:font-bold prose-headings:text-gray-900
+          prose-a:text-blue-600 prose-a:font-medium prose-a:no-underline hover:prose-a:underline prose-a:transition-colors
+          prose-strong:text-gray-900 prose-strong:font-semibold 
+          prose-em:text-gray-800 prose-em:italic
+          prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-700
+          prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-gray-800
+          prose-pre:bg-gray-100 prose-pre:p-4 prose-pre:rounded prose-pre:overflow-x-auto
+          prose-img:rounded-lg prose-img:shadow-md prose-img:my-6
+          prose-ul:list-disc prose-ul:ml-6 prose-ol:list-decimal prose-ol:ml-6
+          prose-li:text-gray-800 prose-li:mb-2
+          prose-table:border-collapse prose-table:w-full prose-th:border prose-th:p-2 prose-th:bg-gray-100 prose-td:border prose-td:p-2
+          prose-hr:border-gray-300 prose-hr:my-8
+        ">
           {sanitizedSummary ? (
             <div dangerouslySetInnerHTML={{ __html: sanitizedSummary }} />
           ) : (
