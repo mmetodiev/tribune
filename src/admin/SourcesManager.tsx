@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Source } from "@/types";
-import { deleteSource as deleteSourceAPI, toggleSource, manualFetchSource } from "@/lib/api";
+import { deleteSource, toggleSource, manualFetchSource } from "@/services/sourcesService";
 import { useSources } from "@/hooks/useSources";
 import AddSourceModal from "./components/AddSourceModal";
 import TestSourceModal from "./components/TestSourceModal";
@@ -27,7 +27,7 @@ export default function SourcesManager() {
       return;
     }
     try {
-      await deleteSourceAPI(id);
+      await deleteSource(id);
       await refetch();
     } catch (err: any) {
       alert("Failed to delete source: " + err.message);
@@ -41,6 +41,8 @@ export default function SourcesManager() {
   const handleFetch = async (id: string) => {
     try {
       setFetchingSourceId(id);
+      // Call Firebase Function for manual fetch (backend operation)
+      const { manualFetchSource } = await import("@/lib/api");
       await manualFetchSource(id);
       alert("Fetch completed successfully!");
       await refetch();

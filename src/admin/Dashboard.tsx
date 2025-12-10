@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { manualFetchAll } from "@/lib/api";
+import { manualFetchAll } from "@/lib/api"; // Keep for manual fetch (backend operation)
 import { useArticles } from "@/hooks/useArticles";
 import { useSources } from "@/hooks/useSources";
 import { useFetchLogs } from "@/hooks/useFetchLogs";

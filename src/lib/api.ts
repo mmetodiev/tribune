@@ -5,70 +5,44 @@ import type { Source, Article } from "@/types";
 /**
  * Firebase Functions API
  * 
- * This module contains callable Firebase Functions for server-side operations.
+ * This module contains callable Firebase Functions for backend operations only.
  * 
  * ARCHITECTURE NOTES:
- * - READ operations (get*) are DEPRECATED - use hooks instead (useArticles, useSources, etc.)
- * - WRITE operations (create*, update*, delete*, test*, manual*) still use Functions
- * - Direct Firestore queries are faster and more cost-effective for reads
- * - Functions are retained for complex operations requiring server-side logic
- * 
- * Refactored in Sprint 7+ to use services + hooks pattern for better performance.
+ * - Source CRUD operations now use direct Firestore (see services/sourcesService.ts)
+ * - Only backend operations (RSS fetching) use Functions
+ * - Direct Firestore queries are faster and more cost-effective for reads/writes
  */
 
 // ============================================================================
-// SOURCE FUNCTIONS (Mutations - Keep as Functions)
+// RSS FETCHING FUNCTIONS (Backend operations only)
 // ============================================================================
-
-export async function createSource(sourceData: any) {
-  const fn = httpsCallable(functions, "createSource");
-  const result = await fn(sourceData);
-  return result.data;
-}
-
-export async function updateSource(id: string, updates: Partial<Source>) {
-  const fn = httpsCallable(functions, "modifySource");
-  const result = await fn({ id, updates });
-  return result.data;
-}
-
-export async function deleteSource(id: string) {
-  const fn = httpsCallable(functions, "removeSource");
-  const result = await fn({ id });
-  return result.data;
-}
-
-export async function toggleSource(id: string) {
-  const fn = httpsCallable(functions, "toggleSourceStatus");
-  const result = await fn({ id });
-  return result.data;
-}
 
 /**
- * @deprecated Use useSources() hook instead
- * Direct Firestore queries are faster and more cost-effective
+ * Manually fetch articles from a specific RSS source
+ * @param id Source ID
  */
-export async function getSources(): Promise<{ success: boolean; sources: Source[] }> {
-  const fn = httpsCallable(functions, "getSources");
-  const result = await fn({});
-  return result.data as any;
-}
-
-export async function testSource(id: string) {
-  const fn = httpsCallable(functions, "testSource");
-  const result = await fn({ id });
-  return result.data;
-}
-
 export async function manualFetchSource(id: string) {
   const fn = httpsCallable(functions, "manualFetchSource");
   const result = await fn({ id });
   return result.data;
 }
 
+/**
+ * Manually fetch articles from all enabled RSS sources
+ */
 export async function manualFetchAll() {
   const fn = httpsCallable(functions, "manualFetchAll");
   const result = await fn({});
+  return result.data;
+}
+
+/**
+ * Test an RSS feed URL (for validation before adding)
+ * @param url RSS feed URL to test
+ */
+export async function testRSSFeed(url: string) {
+  const fn = httpsCallable(functions, "testRSSFeed");
+  const result = await fn({ url });
   return result.data;
 }
 

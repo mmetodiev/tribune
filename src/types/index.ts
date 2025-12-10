@@ -1,31 +1,18 @@
 import { Timestamp } from "firebase/firestore";
 
 // Source types
-export type SourceType = "rss" | "scrape";
+export type SourceType = "rss"; // Only RSS now
 export type UpdateFrequency = "hourly" | "daily" | "manual";
 export type SourceStatus = "active" | "error" | "disabled";
-
-export interface SourceSelectors {
-  articleContainer: string;
-  headline: string;
-  link: string;
-  summary?: string;
-  image?: string;
-  date?: string;
-}
 
 export interface Source {
   id: string;
   name: string;
-  url: string;
-  type: SourceType;
+  url: string; // RSS feed URL
+  type: SourceType; // Always "rss"
   enabled: boolean;
 
-  // Scraping configuration (when type='scrape')
-  selectors?: SourceSelectors;
-
   // Metadata
-  category: string;
   updateFrequency: UpdateFrequency;
   priority: number; // 1-10, for display ordering
 
@@ -40,10 +27,9 @@ export interface Source {
   totalArticlesFetched: number;
   averageArticlesPerFetch: number;
 
-  // Legal/compliance
-  robotsTxtCompliant: boolean;
-  termsAccepted: boolean;
+  // Notes
   notes: string;
+  createdAt?: Timestamp;
 }
 
 // Article types
@@ -54,53 +40,22 @@ export interface Article {
   sourceId: string;
   sourceName: string; // denormalized for easy display
 
-  // Optional fields
-  summary: string; // RSS/meta description
+  // RSS Content
+  summary: string; // RSS description/content (HTML)
   author: string;
   publishedDate: Timestamp | null;
   imageUrl: string;
 
-  // Text extraction & summarization
-  fullText?: string; // Full article text (extracted from HTML)
-  extractedSummary?: string; // Auto-generated summary (first 2-3 sentences)
-  summarizedAt?: Timestamp; // When summary was generated
-  summarizationMethod?: "extractive" | "ai"; // Method used for summarization
-  wordCount?: number; // Word count of full text
-
   // System fields
   fetchedAt: Timestamp;
 
-  // Categorization
-  categories: string[]; // category IDs
-  autoCategories: string[]; // AI-suggested, future phase
-
-  // User interaction (future)
+  // User interaction
   read: boolean;
   bookmarked: boolean;
   hidden: boolean;
 }
 
-// Category types
-export interface CategoryRules {
-  keywords: string[];
-  sources: string[]; // source IDs
-  domains: string[]; // URL domains
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string; // for AI categorization later
-  color: string; // hex color for UI
-  icon: string; // emoji or icon name
-
-  // Manual categorization rules
-  rules: CategoryRules;
-
-  order: number; // for display sorting
-  createdAt: Timestamp;
-}
+// Categories removed - RSS-only reader doesn't need categorization
 
 // Fetch log types
 export interface FetchLogDetail {
@@ -158,22 +113,10 @@ export interface NormalizedArticle {
 // Form data types (for UI)
 export interface SourceFormData {
   name: string;
-  url: string;
-  type: SourceType;
+  url: string; // RSS feed URL
+  type: SourceType; // Always "rss"
   enabled: boolean;
-  selectors?: SourceSelectors;
-  category: string;
   updateFrequency: UpdateFrequency;
   priority: number;
-  robotsTxtCompliant: boolean;
-  termsAccepted: boolean;
   notes: string;
-}
-
-export interface CategoryFormData {
-  name: string;
-  description: string;
-  color: string;
-  icon: string;
-  rules: CategoryRules;
 }

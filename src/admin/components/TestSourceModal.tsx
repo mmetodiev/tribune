@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Source, RawArticle } from "@/types";
-import { testSource } from "@/lib/api";
+import { testRSSFeed } from "@/lib/api";
 
 interface TestSourceModalProps {
   source: Source;
@@ -20,7 +20,7 @@ export default function TestSourceModal({ source, onClose }: TestSourceModalProp
     try {
       setTesting(true);
       setError(null);
-      const data = await testSource(source.id);
+      const data = await testRSSFeed(source.url);
       setResult(data);
     } catch (err: any) {
       setError(err.message || "Test failed");

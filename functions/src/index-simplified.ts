@@ -2,7 +2,7 @@ import { initializeApp } from "firebase-admin/app";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/v2";
-import { getFirestore, Timestamp, FieldValue } from "firebase-admin/firestore";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { parseFeed } from "feedsmith";
 import { createHash } from "crypto";
 
@@ -31,7 +31,6 @@ interface Source {
 
 interface RawArticle {
   title?: string;
-  headline?: string;
   url?: string;
   link?: string;
   summary?: string;
@@ -268,7 +267,7 @@ async function updateSourceStats(
       consecutiveFailures: 0,
       status: "active",
       errorMessage: "",
-      totalArticlesFetched: FieldValue.increment(articleCount),
+      totalArticlesFetched: db.FieldValue.increment(articleCount),
     });
   } else {
     const sourceDoc = await sourceRef.get();
@@ -501,3 +500,4 @@ export const testRSSFeed = onCall(async (request) => {
     throw new HttpsError("internal", "Failed to test RSS feed");
   }
 });
+

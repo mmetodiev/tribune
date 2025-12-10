@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Article } from '@/types';
+import { getPreviewText } from '@/lib/htmlUtils';
 
 interface ArticleItemProps {
   article: Article;
@@ -38,10 +39,10 @@ export default function ArticleItem({ article, variant = 'large' }: ArticleItemP
           </Link>
         </div>
 
-        {/* Show RSS summary */}
+        {/* Show RSS summary (strip HTML for preview) */}
         {article.summary && (
           <p className="text-sm text-gray-700 mb-2 line-clamp-2">
-            {article.summary}
+            {getPreviewText(article.summary, 150)}
           </p>
         )}
       </div>
@@ -78,10 +79,10 @@ export default function ArticleItem({ article, variant = 'large' }: ArticleItemP
         />
       )}
 
-      {/* Show RSS summary */}
+      {/* Show RSS summary (strip HTML for preview) */}
       {article.summary && (
         <p className="text-sm leading-relaxed mb-2 line-clamp-3">
-          {article.summary}
+          {getPreviewText(article.summary, 200)}
         </p>
       )}
     </div>

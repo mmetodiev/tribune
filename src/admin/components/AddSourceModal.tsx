@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { UpdateFrequency } from "@/types";
-import { createSource } from "@/lib/api";
+import { createSource } from "@/services/sourcesService";
 import { sourcePresets, type SourcePreset, getPresetCategories } from "@/lib/sourcePresets";
 
 interface AddSourceModalProps {
@@ -18,7 +18,6 @@ export default function AddSourceModal({ onClose, onSuccess }: AddSourceModalPro
   const [formData, setFormData] = useState({
     name: "",
     url: "",
-    category: "general",
     updateFrequency: "daily" as UpdateFrequency,
     priority: 5,
     notes: "",
@@ -43,14 +42,11 @@ export default function AddSourceModal({ onClose, onSuccess }: AddSourceModalPro
       await createSource({
         name: selectedPreset.name,
         url: selectedPreset.url,
-        type: selectedPreset.type,
-        category: selectedPreset.category,
+        type: "rss", // Always RSS
         updateFrequency: "daily",
         priority: 5,
         enabled: true,
-        robotsTxtCompliant: true,
-        termsAccepted: true,
-        notes: selectedPreset.description,
+        notes: selectedPreset.description || "",
       });
 
       onSuccess();
@@ -75,10 +71,8 @@ export default function AddSourceModal({ onClose, onSuccess }: AddSourceModalPro
       setSubmitting(true);
       const sourceData = {
         ...formData,
-        type: "rss",
+        type: "rss" as const,
         enabled: true,
-        robotsTxtCompliant: true,
-        termsAccepted: true,
       };
 
       await createSource(sourceData);
@@ -243,21 +237,6 @@ export default function AddSourceModal({ onClose, onSuccess }: AddSourceModalPro
                   <p className="text-sm text-gray-500 mt-1">
                     Enter the full URL to the RSS or Atom feed
                   </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.category}
-                    onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
-                    }
-                    className="w-full border border-gray-300 rounded px-3 py-2"
-                    placeholder="e.g., tech, business, general"
-                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
