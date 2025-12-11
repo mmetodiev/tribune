@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Source } from "@/types";
-import { deleteSource, toggleSource, manualFetchSource } from "@/services/sourcesService";
+import { deleteSource, toggleSource } from "@/services/sourcesService";
 import { useSources } from "@/hooks/useSources";
 import AddSourceModal from "./components/AddSourceModal";
 import TestSourceModal from "./components/TestSourceModal";

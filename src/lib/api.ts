@@ -1,6 +1,6 @@
 import { httpsCallable } from "firebase/functions";
 import { functions } from "./firebase";
-import type { Source, Article } from "@/types";
+import type { Article } from "@/types";
 
 /**
  * Firebase Functions API

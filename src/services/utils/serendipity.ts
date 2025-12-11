@@ -1,6 +1,18 @@
 import type { Article } from '@/types';
 
 /**
+ * Shuffles an array using Fisher-Yates algorithm
+ */
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+/**
  * Sorts articles deterministically by date (newest first), then by ID for consistency
  */
 function sortArticlesDeterministically(articles: Article[]): Article[] {
