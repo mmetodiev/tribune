@@ -11,6 +11,7 @@ export default function SourceView() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [visibleCount, setVisibleCount] = useState(30);
 
   useEffect(() => {
     async function fetchSourceArticles() {
@@ -37,6 +38,44 @@ export default function SourceView() {
   }, [sourceId]);
 
   const sourceName = articles.length > 0 ? articles[0].sourceName : 'Source';
+  
+  const getDateValue = (timestamp: any): number => {
+    if (!timestamp) return 0;
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate().getTime();
+    } else if (timestamp.seconds) {
+      return timestamp.seconds * 1000;
+    } else {
+      return new Date(timestamp).getTime();
+    }
+  };
+
+  // Sort articles by publishedDate (newest first), fallback to fetchedAt if no publishedDate
+  const sortedArticles = [...articles].sort((a, b) => {
+    const dateA = a.publishedDate || a.fetchedAt;
+    const dateB = b.publishedDate || b.fetchedAt;
+    return getDateValue(dateB) - getDateValue(dateA); // Descending order (newest first)
+  });
+  
+  const displayedArticles = sortedArticles.slice(0, visibleCount);
+  const hasMore = sortedArticles.length > visibleCount;
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return null;
+    let date: Date;
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      date = timestamp.toDate();
+    } else if (timestamp.seconds) {
+      date = new Date(timestamp.seconds * 1000);
+    } else {
+      date = new Date(timestamp);
+    }
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
 
   if (loading) {
     return (
@@ -122,7 +161,7 @@ export default function SourceView() {
 
             {/* Articles list - single column */}
             <div className="space-y-6">
-              {articles.map((article, index) => {
+              {displayedArticles.map((article, index) => {
                 const handleClick = (e: React.MouseEvent) => {
                   // Allow opening original with Cmd/Ctrl+Click
                   if (e.metaKey || e.ctrlKey) {
@@ -130,6 +169,8 @@ export default function SourceView() {
                     window.open(article.url, '_blank');
                   }
                 };
+
+                const publishedDate = formatDate(article.publishedDate);
 
                 return (
                   <div key={article.id}>
@@ -139,15 +180,22 @@ export default function SourceView() {
                       
                       {/* Title and description */}
                       <div className="flex-1">
-                        <Link 
-                          to={`/article/${article.id}`}
-                          className="hover:underline"
-                          onClick={handleClick}
-                        >
-                          <h3 className="font-semibold text-lg mb-2" style={{ fontFamily: 'Lato, sans-serif' }}>
-                            {article.title}
-                          </h3>
-                        </Link>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Link 
+                            to={`/article/${article.id}`}
+                            className="hover:underline"
+                            onClick={handleClick}
+                          >
+                            <h3 className="font-semibold text-lg" style={{ fontFamily: 'Lato, sans-serif' }}>
+                              {article.title}
+                            </h3>
+                          </Link>
+                          {publishedDate && (
+                            <span className="text-xs text-gray-500">
+                              {publishedDate}
+                            </span>
+                          )}
+                        </div>
                         
                         {/* Description */}
                         {article.summary && (
@@ -159,13 +207,25 @@ export default function SourceView() {
                     </div>
                     
                     {/* Separator line - light grey */}
-                    {index < articles.length - 1 && (
+                    {index < displayedArticles.length - 1 && (
                       <div className="mt-6 border-b border-gray-300" />
                     )}
                   </div>
                 );
               })}
             </div>
+
+            {/* Load More button */}
+            {hasMore && (
+              <div className="text-center mt-8">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 30)}
+                  className="px-6 py-2 bg-[#2f2f2f] text-[#f9f7f1] hover:bg-[#1a1a1a] transition-colors font-semibold text-sm uppercase"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
 
             {/* Footer */}
             <div className="text-center pt-6 mt-8 border-t-2 border-[#2f2f2f]">

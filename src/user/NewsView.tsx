@@ -62,12 +62,12 @@ export default function NewsView() {
         {/* Main Layout: Left Column (Sources) + Main Content */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* LEFT COLUMN - 1/5 width on desktop, full width on mobile */}
-          <div className="w-full lg:w-1/5 lg:border-r-2 border-[#2f2f2f] lg:pr-6">
+          <div className="w-full lg:w-1/4 lg:pr-6">
             <SourcesSidebar />
           </div>
 
           {/* MAIN CONTENT - 4/5 width on desktop */}
-          <div className="w-full lg:w-4/5">
+          <div className="w-full lg:w-3/4">
             {/* ROW 1: 9 articles flowing in 3 columns */}
             {row1Articles.length > 0 && (
               <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 [column-rule:1px_solid_theme(colors.gray.300)] border-b-2 border-[#2f2f2f] pb-8 mb-8">
