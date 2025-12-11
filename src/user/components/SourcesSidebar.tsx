@@ -20,44 +20,79 @@ export default function SourcesSidebar() {
   }
 
   return (
-    <div className="bg-[#e8e5dd] p-6 rounded">
-      <h3 className="uppercase mb-4 border-b border-gray-300 pb-2 text-xl tracking-wide" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
-        Sources
-      </h3>
-      <div className="space-y-3">
-        {sources.map((source) => (
-          <div key={source.id} className="border-b border-gray-300 pb-3 last:border-b-0">
-            <Link 
-              to={`/source/${source.id}`}
-              className="flex items-start gap-3 hover:opacity-80 transition-opacity"
-            >
-              {/* Favicon on the left */}
-              <img 
-                src={getFaviconUrl(source.url)} 
-                alt={`${source.name} favicon`}
-                className="w-8 h-8 flex-shrink-0 mt-0.5"
-                onError={(e) => {
-                  // Fallback to a default icon if favicon fails to load
-                  (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23ccc"/></svg>';
-                }}
-              />
-              
-              {/* Title and count on the right */}
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-base leading-tight">
-                  {source.name}
+    <>
+      {/* Desktop: always-visible sidebar */}
+      <div className="hidden lg:block bg-[#e8e5dd] p-6 rounded">
+        <h3
+          className="uppercase mb-4 border-b border-gray-300 pb-2 text-xl tracking-wide"
+          style={{ fontFamily: 'Bebas Neue, sans-serif' }}
+        >
+          Sources
+        </h3>
+        <div className="space-y-3">
+          {sources.map((source) => (
+            <div key={source.id} className="border-b border-gray-300 pb-3 last:border-b-0">
+              <Link to={`/source/${source.id}`} className="flex items-start gap-3 hover:opacity-80 transition-opacity">
+                {/* Favicon on the left */}
+                <img
+                  src={getFaviconUrl(source.url)}
+                  alt={`${source.name} favicon`}
+                  className="w-8 h-8 flex-shrink-0 mt-0.5"
+                  onError={(e) => {
+                    // Fallback to a default icon if favicon fails to load
+                    (e.target as HTMLImageElement).src =
+                      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23ccc"/></svg>';
+                  }}
+                />
+
+                {/* Title and count on the right */}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-base leading-tight">{source.name}</div>
+                  {source.totalArticlesFetched > 0 && (
+                    <div className="text-xs text-gray-500">{source.totalArticlesFetched} articles</div>
+                  )}
                 </div>
-                {source.totalArticlesFetched > 0 && (
-                  <div className="text-xs text-gray-500">
-                    {source.totalArticlesFetched} articles
-                  </div>
-                )}
-              </div>
-            </Link>
-          </div>
-        ))}
+              </Link>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+
+      {/* Mobile: collapsible control so it doesn't push content below the fold */}
+      <details className="lg:hidden bg-[#e8e5dd] rounded">
+        <summary
+          className="cursor-pointer select-none list-none px-4 py-3 flex items-center justify-between border-b border-gray-300"
+          style={{ fontFamily: 'Bebas Neue, sans-serif' }}
+        >
+          <span className="uppercase text-lg tracking-wide">Sources</span>
+          <span className="text-xs font-sans text-gray-600">{sources.length}</span>
+        </summary>
+
+        <div className="px-4 py-3 max-h-72 overflow-auto space-y-3">
+          {sources.map((source) => (
+            <div key={source.id} className="border-b border-gray-300 pb-3 last:border-b-0">
+              <Link to={`/source/${source.id}`} className="flex items-start gap-3 hover:opacity-80 transition-opacity">
+                <img
+                  src={getFaviconUrl(source.url)}
+                  alt={`${source.name} favicon`}
+                  className="w-7 h-7 flex-shrink-0 mt-0.5"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect width="32" height="32" fill="%23ccc"/></svg>';
+                  }}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm leading-tight">{source.name}</div>
+                  {source.totalArticlesFetched > 0 && (
+                    <div className="text-xs text-gray-500">{source.totalArticlesFetched} articles</div>
+                  )}
+                </div>
+              </Link>
+            </div>
+          ))}
+        </div>
+      </details>
+    </>
   );
 }
 

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
+import { ChevronLeft } from "lucide-react";
 import { getArticleById, saveExtractedContent } from "@/services/articlesService";
 import { extractArticle } from "@/services/articleExtractorService";
 import { isRSSSummaryStub } from "@/utils/articleUtils";
@@ -140,9 +141,10 @@ export default function ArticleReader() {
           <div className="flex gap-4 justify-center">
             <button
               onClick={() => navigate(-1)}
-              className="px-6 py-2 bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition-colors"
+              className="px-6 py-2 bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition-colors flex items-center gap-2"
             >
-              ← Go Back
+              <ChevronLeft className="w-5 h-5" />
+              Go Back
             </button>
             {article && (
               <a
@@ -203,19 +205,10 @@ export default function ArticleReader() {
             onClick={() => navigate(-1)}
             className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
           >
-            <span>←</span>
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             <span className="hidden sm:inline">Back</span>
           </button>
 
-          <a
-            href={article.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
-          >
-            <span className="hidden sm:inline">View Full Article →</span>
-            <span className="sm:hidden">View Full →</span>
-          </a>
         </div>
       </div>
 
