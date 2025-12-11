@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowDownRight } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowDownRight, ArrowLeft } from 'lucide-react';
 import { getArticlesBySource } from '@/services/articlesService';
 import SourcesSidebar from './components/SourcesSidebar';
 import { getPreviewText } from '@/lib/htmlUtils';
@@ -8,10 +8,14 @@ import type { Article } from '@/types';
 
 export default function SourceView() {
   const { sourceId } = useParams<{ sourceId: string }>();
+  const navigate = useNavigate();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(30);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const stickyTriggerRef = useRef<HTMLDivElement | null>(null);
+  const stickyObserverRef = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     async function fetchSourceArticles() {
@@ -38,6 +42,44 @@ export default function SourceView() {
   }, [sourceId]);
 
   const sourceName = articles.length > 0 ? articles[0].sourceName : 'Source';
+
+  const setStickyTriggerEl = useCallback((node: HTMLDivElement | null) => {
+    stickyTriggerRef.current = node;
+
+    if (stickyObserverRef.current) {
+      stickyObserverRef.current.disconnect();
+      stickyObserverRef.current = null;
+    }
+
+    if (!node) return;
+
+    stickyObserverRef.current = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyHeader(!entry.isIntersecting);
+      },
+      {
+        threshold: 0,
+        // account for the fixed header height so "under it" counts as hidden
+        rootMargin: '-72px 0px 0px 0px',
+      }
+    );
+
+    stickyObserverRef.current.observe(node);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (stickyObserverRef.current) {
+        stickyObserverRef.current.disconnect();
+        stickyObserverRef.current = null;
+      }
+    };
+  }, []);
+
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate('/');
+  };
   
   const getDateValue = (timestamp: any): number => {
     if (!timestamp) return 0;
@@ -118,6 +160,35 @@ export default function SourceView() {
 
   return (
     <div className="min-h-screen bg-[#f9f7f1] text-[#2f2f2f] py-8">
+      {/* Mobile sticky header (shows after masthead + sources controls scroll away) */}
+      <div
+        className={[
+          'lg:hidden fixed top-0 left-0 right-0 z-50 transition-transform duration-200',
+          showStickyHeader ? 'translate-y-0' : '-translate-y-full',
+        ].join(' ')}
+      >
+        <div className="bg-[#f9f7f1]/95 backdrop-blur border-b border-gray-300 pt-[env(safe-area-inset-top)]">
+          <div className="px-4 py-3 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
+            </button>
+
+            <div className="flex-1 min-w-0 text-center">
+              <div className="text-sm font-semibold truncate">{sourceName}</div>
+            </div>
+
+            {/* spacer to keep title centered */}
+            <div className="w-[62px]" />
+          </div>
+        </div>
+      </div>
+
       {/* Masthead */}
       <div className="text-center mb-6">
         <h1 className="font-serif font-black text-5xl sm:text-6xl md:text-7xl uppercase leading-none mb-4">
@@ -140,6 +211,8 @@ export default function SourceView() {
           {/* LEFT COLUMN - 1/5 width on desktop, full width on mobile */}
           <div className="w-full lg:w-1/4 lg:pr-6">
             <SourcesSidebar />
+            {/* sentinel: when this scrolls out, show the sticky header on mobile */}
+            <div ref={setStickyTriggerEl} className="h-px lg:hidden" />
           </div>
 
           {/* MAIN CONTENT - 4/5 width on desktop */}
