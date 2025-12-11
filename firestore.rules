@@ -13,9 +13,9 @@ service cloud.firestore {
       allow write: if false; // Only Firebase Functions can write
     }
 
-    // Sources collection: authenticated users can read and write (CRUD operations)
+    // Sources collection: public read access (for SourcesSidebar), authenticated users can write
     match /sources/{sourceId} {
-      allow read: if isAuthenticated();
+      allow read: if true; // Public access for SourcesSidebar on NewsView
       allow create: if isAuthenticated();
       allow update: if isAuthenticated();
       allow delete: if isAuthenticated();

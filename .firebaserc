@@ -1,5 +1,15 @@
 {
   "projects": {
     "default": "react-firebase-starter"
-  }
+  },
+  "targets": {
+    "tribune-50450": {
+      "hosting": {
+        "tribune_at_metodiev": [
+          "tribune-50450"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
