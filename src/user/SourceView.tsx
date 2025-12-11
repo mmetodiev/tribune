@@ -99,12 +99,12 @@ export default function SourceView() {
         {/* Main Layout: Left Column (Sources) + Main Content */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* LEFT COLUMN - 1/5 width on desktop, full width on mobile */}
-          <div className="w-full lg:w-1/5 lg:border-r-2 border-[#2f2f2f] lg:pr-6">
+          <div className="w-full lg:w-1/4 lg:pr-6">
             <SourcesSidebar />
           </div>
 
           {/* MAIN CONTENT - 4/5 width on desktop */}
-          <div className="w-full lg:w-4/5">
+          <div className="w-full lg:w-3/4">
             {/* Back button */}
             <div className="mb-6">
               <Link 

@@ -20,13 +20,13 @@ export default function SourcesSidebar() {
   }
 
   return (
-    <div>
-      <h3 className="uppercase mb-4 border-b border-[#2f2f2f] pb-2 text-xl tracking-wide" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+    <div className="bg-[#e8e5dd] p-6 rounded">
+      <h3 className="uppercase mb-4 border-b border-gray-300 pb-2 text-xl tracking-wide" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
         Sources
       </h3>
       <div className="space-y-3">
         {sources.map((source) => (
-          <div key={source.id} className="border-b border-[#2f2f2f] pb-3 last:border-b-0">
+          <div key={source.id} className="border-b border-gray-300 pb-3 last:border-b-0">
             <Link 
               to={`/source/${source.id}`}
               className="flex items-start gap-3 hover:opacity-80 transition-opacity"
