@@ -295,9 +295,27 @@ async function fetchSourceArticles(source: Source): Promise<{ success: boolean; 
       return { success: false, articleCount: 0, error: fetchResult.error };
     }
 
+    // Sort articles by published date (newest first) and limit to latest 30
+    const sortedArticles = fetchResult.articles
+      .map(article => ({
+        ...article,
+        parsedDate: parseDate(article.pubDate || article.published),
+      }))
+      .sort((a, b) => {
+        // Sort by date, newest first (null dates go to end)
+        if (!a.parsedDate && !b.parsedDate) return 0;
+        if (!a.parsedDate) return 1;
+        if (!b.parsedDate) return -1;
+        return b.parsedDate.getTime() - a.parsedDate.getTime();
+      })
+      .slice(0, 30) // Only take the latest 30 articles
+      .map(({ parsedDate, ...article }) => article); // Remove parsedDate before processing
+
+    logger.info(`Processing ${sortedArticles.length} articles (limited from ${fetchResult.articles.length}) from ${source.name}`);
+
     // Normalize and save articles
     let savedCount = 0;
-    for (const rawArticle of fetchResult.articles) {
+    for (const rawArticle of sortedArticles) {
       const normalized = normalizeArticle(rawArticle, source);
       if (normalized) {
         const isNew = await saveArticle(normalized);

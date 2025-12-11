@@ -1,15 +1,11 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useArticlesContext } from '@/contexts/ArticlesContext';
-import { useSources } from '@/hooks/useSources';
 import ArticleItem from './components/ArticleItem';
+import SourcesSidebar from './components/SourcesSidebar';
 
 export default function NewsView() {
   // Use cached articles from context to preserve state across navigation
   const { articles, loading, fetchArticles } = useArticlesContext();
-  
-  // Fetch enabled sources for left column
-  const { sources, loading: sourcesLoading } = useSources({ enabledOnly: true });
 
   // Fetch articles on mount (will use cache if available)
   useEffect(() => {
@@ -67,31 +63,7 @@ export default function NewsView() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* LEFT COLUMN - 1/5 width on desktop, full width on mobile */}
           <div className="w-full lg:w-1/5 lg:border-r-2 border-[#2f2f2f] lg:pr-6">
-            {/* Sources List */}
-            {!sourcesLoading && sources.length > 0 && (
-              <div>
-                <h3 className="uppercase mb-4 border-b border-[#2f2f2f] pb-2 text-xl tracking-wide" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
-                  Sources
-                </h3>
-                <div className="space-y-3">
-                  {sources.map((source) => (
-                    <div key={source.id} className="border-b border-[#2f2f2f] pb-3 last:border-b-0">
-                      <Link 
-                        to={`/source/${source.id}`}
-                        className="font-semibold text-base mb-1 hover:underline block"
-                      >
-                        {source.name}
-                      </Link>
-                      {source.totalArticlesFetched > 0 && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          {source.totalArticlesFetched} articles
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <SourcesSidebar />
           </div>
 
           {/* MAIN CONTENT - 4/5 width on desktop */}

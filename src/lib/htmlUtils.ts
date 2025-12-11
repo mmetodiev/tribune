@@ -41,3 +41,4 @@ export function getPreviewText(html: string, maxLength: number = 200): string {
   return truncateText(plainText, maxLength);
 }
 
+

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getArticlesBySource } from '@/services/articlesService';
 import ArticleItem from './components/ArticleItem';
+import SourcesSidebar from './components/SourcesSidebar';
 import type { Article } from '@/types';
 
 export default function SourceView() {
@@ -94,26 +95,37 @@ export default function SourceView() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4">
-        {/* Back button */}
-        <div className="mb-6">
-          <Link 
-            to="/" 
-            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 hover:underline"
-          >
-            ← Back to all articles
-          </Link>
-        </div>
+        {/* Main Layout: Left Column (Sources) + Main Content */}
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* LEFT COLUMN - 1/5 width on desktop, full width on mobile */}
+          <div className="w-full lg:w-1/5 lg:border-r-2 border-[#2f2f2f] lg:pr-6">
+            <SourcesSidebar />
+          </div>
 
-        {/* Articles grid */}
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 [column-rule:1px_solid_theme(colors.gray.300)]">
-          {articles.map((article) => (
-            <ArticleItem key={article.id} article={article} variant="large" />
-          ))}
-        </div>
+          {/* MAIN CONTENT - 4/5 width on desktop */}
+          <div className="w-full lg:w-4/5">
+            {/* Back button */}
+            <div className="mb-6">
+              <Link 
+                to="/" 
+                className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 hover:underline"
+              >
+                ← Back to all articles
+              </Link>
+            </div>
 
-        {/* Footer */}
-        <div className="text-center pt-6 mt-8 border-t-2 border-[#2f2f2f]">
-          <p className="text-xs uppercase">End of {sourceName} Articles</p>
+            {/* Articles grid */}
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 [column-rule:1px_solid_theme(colors.gray.300)]">
+              {articles.map((article) => (
+                <ArticleItem key={article.id} article={article} variant="large" />
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="text-center pt-6 mt-8 border-t-2 border-[#2f2f2f]">
+              <p className="text-xs uppercase">End of {sourceName} Articles</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
