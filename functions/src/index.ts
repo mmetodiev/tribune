@@ -501,3 +501,67 @@ export const testRSSFeed = onCall(async (request) => {
     throw new HttpsError("internal", "Failed to test RSS feed");
   }
 });
+
+/**
+ * Cleanup old articles: Delete articles older than specified days
+ */
+export const cleanupOldArticles = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "User must be authenticated");
+  }
+
+  try {
+    const { daysToKeep } = request.data;
+    const retentionDays = daysToKeep || 30;
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+    const cutoffTimestamp = Timestamp.fromDate(cutoffDate);
+
+    // Get all articles older than cutoff date
+    const articlesSnapshot = await db
+      .collection("articles")
+      .where("fetchedAt", "<", cutoffTimestamp)
+      .get();
+
+    if (articlesSnapshot.empty) {
+      return { success: true, deletedCount: 0 };
+    }
+
+    // Delete in batches (Firestore limit is 500 operations per batch)
+    const batches: any[] = [];
+    let currentBatch = db.batch();
+    let batchCount = 0;
+    let totalDeleted = 0;
+
+    articlesSnapshot.docs.forEach((doc) => {
+      currentBatch.delete(doc.ref);
+      batchCount++;
+      totalDeleted++;
+
+      if (batchCount === 500) {
+        batches.push(currentBatch);
+        currentBatch = db.batch();
+        batchCount = 0;
+      }
+    });
+
+    // Add the last batch if it has operations
+    if (batchCount > 0) {
+      batches.push(currentBatch);
+    }
+
+    // Commit all batches
+    await Promise.all(batches.map((batch) => batch.commit()));
+
+    logger.info(`Deleted ${totalDeleted} old articles (older than ${retentionDays} days)`);
+
+    return {
+      success: true,
+      deletedCount: totalDeleted,
+    };
+  } catch (error) {
+    logger.error("cleanupOldArticles failed", { error });
+    throw new HttpsError("internal", "Failed to cleanup articles");
+  }
+});

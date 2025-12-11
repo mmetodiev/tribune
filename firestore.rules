@@ -13,10 +13,12 @@ service cloud.firestore {
       allow write: if false; // Only Firebase Functions can write
     }
 
-    // Sources collection: authenticated users can read, only functions can write
+    // Sources collection: authenticated users can read and write (CRUD operations)
     match /sources/{sourceId} {
       allow read: if isAuthenticated();
-      allow write: if false; // Only Firebase Functions can write
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
     }
 
     // Fetch logs collection: authenticated users can read, only functions can write
