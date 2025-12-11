@@ -19,7 +19,7 @@ export default function ArticleItem({ article, variant = 'large' }: ArticleItemP
   if (variant === 'small') {
     // Compact variant for row 3
     return (
-      <div className="break-inside-avoid mb-4">
+      <div className="break-inside-avoid mb-4 pb-4 border-b border-gray-300/70">
         <div className="mb-2">
           <Link 
             to={`/article/${article.id}`}
@@ -51,8 +51,8 @@ export default function ArticleItem({ article, variant = 'large' }: ArticleItemP
 
   // Large variant for rows 1 & 2
   return (
-    <div className="break-inside-avoid mb-6">
-      <div className="mb-2 pb-2 border-b border-[#2f2f2f]">
+    <div className="break-inside-avoid mb-3 pb-3 border-b border-gray-300/70">
+      <div className="mb-2">
         <Link 
           to={`/article/${article.id}`}
           className="hover:underline"
