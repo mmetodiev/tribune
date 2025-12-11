@@ -7,10 +7,27 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Articles collection: public read access for home page, only functions can write
+    // Articles collection: public read access for home page
     match /articles/{articleId} {
       allow read: if true; // Public access for NewsView
-      allow write: if false; // Only Firebase Functions can write
+      
+      // Allow updates to fullContent fields (for client-side caching)
+      // This allows the article reader to cache extracted content
+      // Only allow updating these specific fields, and only if they're the only changes
+      allow update: if 
+        // Check that only fullContent fields are being changed
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['fullContent', 'fullContentExtractedAt']) &&
+        // Ensure fullContent is a string if present
+        (!('fullContent' in request.resource.data) || 
+         request.resource.data.fullContent is string) &&
+        // Ensure fullContentExtractedAt is a timestamp if present
+        (!('fullContentExtractedAt' in request.resource.data) || 
+         request.resource.data.fullContentExtractedAt is timestamp);
+      
+      // Only Firebase Functions can create articles or update other fields
+      allow create: if false; // Only Firebase Functions can create
+      allow delete: if false; // Only Firebase Functions can delete
     }
 
     // Sources collection: public read access (for SourcesSidebar), authenticated users can write

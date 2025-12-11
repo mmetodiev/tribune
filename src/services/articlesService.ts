@@ -7,6 +7,7 @@ import {
   getDocs,
   getDoc,
   doc,
+  updateDoc,
   onSnapshot,
   Unsubscribe,
   Timestamp 
@@ -175,6 +176,28 @@ export async function getArticleById(articleId: string): Promise<Article | null>
     return docToArticle(docSnap);
   } catch (error) {
     console.error('Error fetching article by ID:', error);
+    throw error;
+  }
+}
+
+/**
+ * Saves extracted full content to Firestore (caching)
+ * @param articleId The article ID
+ * @param fullContent The extracted HTML content from Readability
+ * @returns Promise that resolves when update is complete
+ */
+export async function saveExtractedContent(
+  articleId: string,
+  fullContent: string
+): Promise<void> {
+  try {
+    const docRef = doc(db, 'articles', articleId);
+    await updateDoc(docRef, {
+      fullContent,
+      fullContentExtractedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error saving extracted content:', error);
     throw error;
   }
 }

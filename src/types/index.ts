@@ -46,6 +46,10 @@ export interface Article {
   publishedDate: Timestamp | null;
   imageUrl: string;
 
+  // Extracted Content (optional, cached after first extraction)
+  fullContent?: string; // Full article HTML extracted via Readability
+  fullContentExtractedAt?: Timestamp; // When the content was extracted
+
   // System fields
   fetchedAt: Timestamp;
 

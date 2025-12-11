@@ -20,7 +20,8 @@ const app = initializeApp(firebaseConfig);
 // Initialize services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const functions = getFunctions(app);
+// Specify region for v2 functions (must match function region)
+export const functions = getFunctions(app, "us-central1");
 export const googleProvider = new GoogleAuthProvider();
 
 // Analytics (only in production)

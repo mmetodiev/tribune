@@ -344,10 +344,17 @@ async function fetchSourceArticles(source: Source): Promise<{ success: boolean; 
 /**
  * Scheduled function: Fetch RSS feeds every hour
  */
-export const scheduledFetchRSS = onSchedule("every 1 hours", async (event) => {
-  logger.info("Starting scheduled RSS fetch");
+export const scheduledFetchRSS = onSchedule(
+  {
+    schedule: "0 * * * *", // Every hour at minute 0
+    timeZone: "America/New_York",
+    memory: "512MiB",
+    timeoutSeconds: 540, // 9 minutes max
+  },
+  async (event) => {
+    logger.info("Starting scheduled RSS fetch", { timestamp: event.scheduleTime });
 
-  try {
+    try {
     // Get all enabled RSS sources
     const sourcesSnapshot = await db
       .collection("sources")
@@ -376,7 +383,8 @@ export const scheduledFetchRSS = onSchedule("every 1 hours", async (event) => {
   } catch (error) {
     logger.error("Scheduled RSS fetch failed", { error });
   }
-});
+  }
+);
 
 /**
  * Manual fetch: Fetch articles from a specific source
@@ -583,3 +591,81 @@ export const cleanupOldArticles = onCall(async (request) => {
     throw new HttpsError("internal", "Failed to cleanup articles");
   }
 });
+
+/**
+ * Extract article content using Readability.js
+ * Fetches full article HTML and extracts main content
+ * No authentication required - article reader should be publicly accessible
+ */
+export const proxyArticle = onCall(
+  {
+    region: "us-central1", // Specify region explicitly
+    cors: true, // Enable CORS for all origins
+    timeoutSeconds: 60, // Increase timeout for slow sites
+    invoker: "public", // Allow unauthenticated invocations (public access)
+  },
+  async (request) => {
+    try {
+      const { url } = request.data;
+
+      if (!url) {
+        throw new HttpsError("invalid-argument", "URL is required");
+      }
+
+      logger.info(`Fetching and parsing article: ${url}`);
+
+      // 1. Fetch article HTML
+      const axios = (await import("axios")).default;
+
+      const response = await axios.get(url, {
+        timeout: 30000,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; TribuneBot/1.0; +https://tribune.news/bot)",
+        },
+        maxRedirects: 5,
+      });
+
+      const html = response.data;
+      const finalUrl = response.request?.res?.responseUrl || url;
+
+      // 2. Create a virtual DOM with JSDOM
+      const { JSDOM } = await import("jsdom");
+      const dom = new JSDOM(html, { url: finalUrl });
+
+      // 3. Parse with Readability
+      const { Readability } = await import("@mozilla/readability");
+      const reader = new Readability(dom.window.document);
+      const article = reader.parse();
+
+      if (!article) {
+        logger.warn(`Failed to parse article: ${url}`);
+        throw new HttpsError("failed-precondition", "Unable to extract readable content from this article");
+      }
+
+      logger.info(`Successfully parsed article: ${article.title}`);
+
+      // 4. Return parsed article data
+      return {
+        success: true,
+        url: finalUrl,
+        title: article.title,
+        byline: article.byline,
+        excerpt: article.excerpt,
+        content: article.content, // HTML content
+        textContent: article.textContent, // Plain text
+        length: article.length,
+        siteName: article.siteName,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error("proxyArticle failed", { error: errorMessage });
+      
+      // Provide more specific error messages
+      if (error instanceof HttpsError) {
+        throw error;
+      }
+      
+      throw new HttpsError("internal", `Failed to fetch article: ${errorMessage}`);
+    }
+  }
+);
