@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { ArrowDownRight } from 'lucide-react';
 import { getArticlesBySource } from '@/services/articlesService';
-import ArticleItem from './components/ArticleItem';
 import SourcesSidebar from './components/SourcesSidebar';
+import { getPreviewText } from '@/lib/htmlUtils';
 import type { Article } from '@/types';
 
 export default function SourceView() {
@@ -114,11 +115,56 @@ export default function SourceView() {
               </Link>
             </div>
 
-            {/* Articles grid */}
-            <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 [column-rule:1px_solid_theme(colors.gray.300)]">
-              {articles.map((article) => (
-                <ArticleItem key={article.id} article={article} variant="large" />
-              ))}
+            {/* Source title */}
+            <h2 className="font-serif font-semibold text-3xl sm:text-4xl mb-8">
+              {sourceName}
+            </h2>
+
+            {/* Articles list - single column */}
+            <div className="space-y-6">
+              {articles.map((article, index) => {
+                const handleClick = (e: React.MouseEvent) => {
+                  // Allow opening original with Cmd/Ctrl+Click
+                  if (e.metaKey || e.ctrlKey) {
+                    e.preventDefault();
+                    window.open(article.url, '_blank');
+                  }
+                };
+
+                return (
+                  <div key={article.id}>
+                    <div className="flex items-start gap-3">
+                      {/* External link icon */}
+                      <ArrowDownRight className="w-5 h-5 text-gray-400 flex-shrink-0 mt-1" />
+                      
+                      {/* Title and description */}
+                      <div className="flex-1">
+                        <Link 
+                          to={`/article/${article.id}`}
+                          className="hover:underline"
+                          onClick={handleClick}
+                        >
+                          <h3 className="font-semibold text-lg mb-2" style={{ fontFamily: 'Lato, sans-serif' }}>
+                            {article.title}
+                          </h3>
+                        </Link>
+                        
+                        {/* Description */}
+                        {article.summary && (
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            {getPreviewText(article.summary, 300)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Separator line - light grey */}
+                    {index < articles.length - 1 && (
+                      <div className="mt-6 border-b border-gray-300" />
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Footer */}
